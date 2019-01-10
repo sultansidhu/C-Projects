@@ -3,8 +3,8 @@
 gcc -Wall -std=gnu99 -g echo_arg.c
 ./a.out csc209 > echo_out.txt
 gcc -Wall -std=gnu99 -g echo_stdin.c
-./a.out | ./a.out given input
+./a.out < ./a.out
 gcc -Wall -std=gnu99 -g count.c
-./a.out 210 | wc | cut -d "1" -f 2
+./a.out 210 | wc -m
 gcc -Wall -std=gnu99 -g echo_stdin.c
-ls -l -S | cut -d " " -f 14 | head -3 | tail -1 | ./a.out
+ls -l -S | head -2 | tail -1 | cut -d " " -f 9 | ./a.out
