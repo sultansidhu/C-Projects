@@ -3,7 +3,7 @@
 gcc -Wall -std=gnu99 -g echo_arg.c
 ./a.out csc209 > echo_out.txt
 gcc -Wall -std=gnu99 -g echo_stdin.c
-./a.out < ./a.out
+./a.out < echo_stdin.c
 gcc -Wall -std=gnu99 -g count.c
 ./a.out 210 | wc -m
 gcc -Wall -std=gnu99 -g echo_stdin.c
