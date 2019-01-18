@@ -1,17 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void main(){
+int phone_func(char *char_array, int number);
+
+int main(){
   char phone[11];
   int number;
-  scanf("%s %i", &phone, &number);
-  int result = phone_func(phone, number);
+  scanf("%10s %i", phone, &number);
+  phone_func(phone, number);
   while(1 > 0){
     int test = scanf("%i", &number);
     if (test == EOF){
       break;
     }
-    result = phone_func(phone, number);
+    phone_func(phone, number);
   }
 }
 

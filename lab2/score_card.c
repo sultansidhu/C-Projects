@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int sum_card(int **score_card, int size); 
+
 /*
  * This function interprets score_card as an array of pointers with size elements.
  * Return the sum of the values pointed to by the elements of score_card.

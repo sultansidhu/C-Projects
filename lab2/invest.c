@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void invest(double *principle_pt, double rate);
 /*
  * Write a void function invest that takes your money and multiplies it by the given rate.
  */
 void invest(double *principle_pt, double rate){
   *principle_pt = *principle_pt * rate;
-  
+
 }
 
 /*
