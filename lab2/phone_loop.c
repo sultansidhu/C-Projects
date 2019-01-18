@@ -7,7 +7,7 @@ void main(){
   scanf("%s %i", &phone, &number);
   int result = phone_func(phone, number);
   while(1 > 0){
-    scanf("%i\n", &number);
+    scanf("%i", &number);
     if (number == EOF){
       break;
     }
