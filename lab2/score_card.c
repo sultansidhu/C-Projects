@@ -8,8 +8,6 @@
 int sum_card(int **score_card, int size) {
     // TODO: write the body of sum_card according to its description.
     int sum = 0;
-    int i = 0;
-    //int array[size] = *score_card;
     for (int i = 0; i < size; i++){
       sum += *(score_card[i]);
     }
