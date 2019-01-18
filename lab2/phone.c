@@ -19,9 +19,9 @@
 
 
 
-void main(){
+int main(){
   char phone[11];
   int number;
   scanf("%s %i", &phone, &number);
-  int result = phone_func(phone, number);
+  phone_func(phone, number);
 }
