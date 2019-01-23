@@ -15,6 +15,25 @@
  */
 
 /* Write your solution here */
+void fib(int **fib_sequence, int count){
+  *fib_sequence = malloc(sizeof(int) * count);
+  if (count == 0){
+
+  } else if (count == 1){
+    (*fib_sequence)[0] = 0;
+  } else if (count == 2){
+    (*fib_sequence)[0] = 0;
+    (*fib_sequence)[1] = 1;
+  } else {
+    (*fib_sequence)[0] = 0;
+    (*fib_sequence)[1] = 1;
+    int i = 2;
+    while (i < count){
+      (*fib_sequence)[i] = (*fib_sequence)[i-1] + (*fib_sequence)[i-2];
+      i++;
+    }
+  }
+}
 
 
 int main(int argc, char **argv) {
