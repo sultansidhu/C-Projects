@@ -21,8 +21,8 @@ int **split_array(const int *s, int length) {
       }
     }
   }else{
-    (result)[0] = malloc(sizeof(int) * (length/2));
-    (result)[1] = malloc(sizeof(int) * ((length/2) + 1));
+    (result)[0] = malloc(sizeof(int) * ((length/2)+1));
+    (result)[1] = malloc(sizeof(int) * ((length/2)));
     for (int i = 0; i < length; i++){
       if (i%2==0){
         (result)[0][i/2] = s[i];
