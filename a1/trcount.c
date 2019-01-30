@@ -11,6 +11,16 @@
 #define STACK_START 0xfff000000
 
 int main(int argc, char **argv) {
+    int globals = 0;
+    int heap = 0;
+    int stack = 0;
+    int instructions = 0;
+    int modifications = 0;
+    int loads = 0;
+    int stores = 0;
+
+
+
     
     FILE *fp = NULL;
 
@@ -28,6 +38,33 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
+    // ITERATING OVER THE FILE INPUT
+    char alphabet;
+    unsigned long address;
+    
+     while (fscanf(fp, "%c,%lx ", &alphabet, &address) != EOF){
+        if (alphabet != 'I'){
+	if ((address > GLOBALS_START) && (address < GLOBALS_END)){
+		globals++;
+	} else if ((address > HEAP_START) && (address < HEAP_END)){
+		heap++;
+	} else if (address > STACK_START){
+		stack++;
+	}
+        }
+
+
+	if (alphabet == 'I'){
+		instructions++;	
+	}else if (alphabet == 'M'){
+		modifications++;	
+	}else if (alphabet == 'L'){
+		loads++;	
+	}else if (alphabet == 'S'){
+		stores++;	
+	}
+    }
+
     /* Complete the implementation */
 
 
@@ -37,17 +74,16 @@ int main(int argc, char **argv) {
      * The print statements are commented out so that the program compiles.  
      * Uncomment them as you get each piece working.
      */
-    /*
     printf("Reference Counts by Type:\n");
-    printf("    Instructions: %d\n", );
-    printf("    Modifications: %d\n", );
-    printf("    Loads: %d\n", );
-    printf("    Stores: %d\n", );
+    printf("    Instructions: %d\n", instructions);
+    printf("    Modifications: %d\n", modifications);
+    printf("    Loads: %d\n", loads);
+    printf("    Stores: %d\n", stores);
     printf("Data Reference Counts by Location:\n");
-    printf("    Globals: %d\n", );
-    printf("    Heap: %d\n", );
-    printf("    Stack: %d\n", );
-    */
+    printf("    Globals: %d\n", globals);
+    printf("    Heap: %d\n", heap);
+    printf("    Stack: %d\n", stack);
+    
 
     return 0;
 }
