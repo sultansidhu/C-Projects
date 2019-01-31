@@ -15,7 +15,14 @@ int main(int argc, char **argv) {
     }
 
     int size = strlen(argv[1]);
-    
-    // TODO: complete the main function
+    char *state = argv[1];
+    int repetitions = strtol(argv[2], NULL, 10);
+    for (int i = 0;i < repetitions; i++){
+      print_state(state, size);
+      update_state(state, size);
+    }
+    return 0;
+
 
 }
+
