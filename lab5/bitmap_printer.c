@@ -42,6 +42,7 @@ int main(int argc, char **argv) {
       free(pixels[k]);
     }
     free(pixels);
+    fclose(image);
 
 
     return 0;
