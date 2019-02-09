@@ -3,6 +3,7 @@
 #include <string.h>
 #include "family.h"
 #include "reading.h"
+#include <errno.c> // CHECK IF WE CAN DO THIS
 
 #define BUF_SIZE	256
 
@@ -15,6 +16,7 @@
    Note: Do not make copies of the words.
 */
 char **prune_word_list(char **words, int len, int *words_remaining) {
+
     return NULL;
 }
 
@@ -42,7 +44,53 @@ void deallocate_pruned_word_list(char **word_list) {
     printf("There are no words of that length.\n");
 */
 char **get_word_list_of_length(char **words, int *len) {
-    return NULL;
+  char *length;
+  char **pruned;
+  int result;
+  int words_remaining = 0;
+  printf("Length of words to use? ");
+  fgets(length, 10, stdin);
+  result = strtol(length, NULL, 10);
+  // do some error checking here
+  if (result == 0){
+    if (errno!=0){
+      exit(1);
+    }
+  }
+  // set length to be the result
+  len = &result;
+  pruned = prune_word_list(words, result, &words_remaining)
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+  // define required variables
+  char *length;
+  int *words_remaining;
+  // get user input on length of required words
+  printf("Length of words to use? ");
+  fgets(length, 10, stdin);
+  result = strtol(length, NULL, 10);
+  // check if the input is valid
+  // TODO: PUT THIS INSIDE A WHILE LOOP
+  if (result == NULL){
+    exit(1);
+  } else {
+    *len = result;
+  }
+  // make call to prune_word_list function
+  pruned_list = prune_word_list(words, *len, words_remaining)
+
 }
 
 
@@ -92,7 +140,7 @@ void play_round(char **words) {
     char *current_word; /*Representation of current word; each blank is a - */
     char *sig; /*Signature of a family*/
     char letters_guessed[26] = {'\0'}; /*Guesses so far*/
-    
+
     /*Get a valid word_list from length (one that has at least one word)*/
     word_list = get_word_list_of_length(words, &len);
 
@@ -128,9 +176,9 @@ void play_round(char **words) {
         deallocate_families(famlist);
         famlist = generate_families(word_list, guess);
         biggest_fam = find_biggest_family(famlist);
-        
+
         sig = get_family_signature(biggest_fam);
-        
+
         /*Search signature for letters in current_word*/
         found = 0;
         i = 0;
@@ -162,7 +210,7 @@ void play_round(char **words) {
         printf("You lose! The word was %s.\n",
                 get_random_word_from_family(biggest_fam));
     }
-    
+
     deallocate_pruned_word_list(word_list);
     free(current_word);
     deallocate_families(famlist);
@@ -174,9 +222,9 @@ void play_round(char **words) {
 int main(void) {
     char again;
     char **words;
-    
+
     words = read_words("dictionary.txt");
-    init_family(1024);    
+    init_family(1024);
 
     do {
         play_round(words);
@@ -189,7 +237,7 @@ int main(void) {
         getchar();
 
     } while (again == 'y');
-  
+
     deallocate_words(words);
     return 0;
 }

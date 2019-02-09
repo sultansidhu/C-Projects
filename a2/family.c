@@ -29,7 +29,7 @@ void init_family(int size) {
 void print_families(Family* fam_list) {
     int i;
     Family *fam = fam_list;
-    
+
     while (fam) {
         printf("***Family signature: %s Num words: %d\n",
                fam->signature, fam->num_words);
@@ -42,13 +42,22 @@ void print_families(Family* fam_list) {
 }
 
 
-/* Return a pointer to a new family whose signature is 
-   a copy of str. Initialize word_ptrs to point to 
-   family_increment+1 pointers, numwords to 0, 
+/* Return a pointer to a new family whose signature is
+   a copy of str. Initialize word_ptrs to point to
+   family_increment+1 pointers, numwords to 0,
    maxwords to family_increment, and next to NULL.
 */
 Family *new_family(char *str) {
-    return NULL;
+  //char **words[family_increment+1]
+  Family *fam_pt = malloc(sizeof(Family));
+  Family fam;
+    fam.num_words=0;
+    fam.next=NULL;
+    strncpy(fam.signature, str, strlen(str));
+    fam.max_words=family_increment;
+    fam.word_ptrs=malloc(sizeof(char *) * (family_increment + 1));
+  *fam_pt = fam;
+  return fam_pt;
 }
 
 
@@ -57,7 +66,13 @@ Family *new_family(char *str) {
    more pointers and then add the new pointer.
 */
 void add_word_to_family(Family *fam, char *word) {
-    return;
+  if (fam->max_words == fam->num_words){
+    fam->word_ptrs=realloc(fam->word_ptrs, fam->max_words+family_increment);
+    fam->max_words = fam->max_words + family_increment;
+  }
+  fam->word_ptrs[fam->num_words] = word;
+  fam->num_words++;
+  // check if dereferencing is needed within the function
 }
 
 
@@ -66,7 +81,15 @@ void add_word_to_family(Family *fam, char *word) {
    fam_list is a pointer to the head of a list of Family nodes.
 */
 Family *find_family(Family *fam_list, char *sig) {
-    return NULL;
+  Family *current_fam_pt = fam_list;
+  while (current_fam_pt != NULL){
+    if (strcmp(current_fam_pt->signature, sig)==0){
+      break;
+    } else {
+      current_fam_pt = current_fam_pt->next;
+    }
+  }
+  return current_fam_pt;
 }
 
 
@@ -76,13 +99,28 @@ Family *find_family(Family *fam_list, char *sig) {
    fam_list is a pointer to the head of a list of Family nodes.
 */
 Family *find_biggest_family(Family *fam_list) {
-    return NULL;
+  Family *current_fam_pt = fam_list;
+  int max = 0;
+  Family *max_fam;
+  while (current_fam_pt != NULL){
+    if (current_fam_pt->num_words > max){
+      max = current_fam_pt->num_words;
+      max_fam = current_fam_pt;
+    }
+    current_fam_pt = current_fam_pt->next;
+  }
+  return max_fam;
 }
 
 
 /* Deallocate all memory rooted in the List pointed to by fam_list. */
 void deallocate_families(Family *fam_list) {
-    return;
+  Family *current_fam_pt = fam_list;
+  while (current_fam_pt != NULL){
+    free(current_fam_pt->word_ptrs);
+    current_fam_pt = current_fam_pt->next;
+  }
+  free(fam_list);
 }
 
 
@@ -94,13 +132,65 @@ void deallocate_families(Family *fam_list) {
    that have at least one word from the current word_list.
 */
 Family *generate_families(char **word_list, char letter) {
-    return NULL;
+  // 1. Initialize a temporary array of created families, will hold them before linking
+  Family *temp_fams = malloc(sizeof(Family)); // FREE THIS
+  int len_temp = 0;
+  // 2. iterate over the word list
+  int i = 0;
+  while (word_list[i] != NULL){
+    // 3. For every word, generate its signature depending on the letter
+    char *signature = malloc(sizeof(char)*strlen(word_list[i])); // FREE THIS
+    strncpy(signature, word_list[i], strlen(word_list[i]));
+    // modify the word_copy
+    for (int j = 0; j < strlen(signature); j++){
+      if (signature[j] != letter){
+        signature[j] = '-'; // FIGURE OUT HOW TO PRESERVE SIGNATURES COMING FROM PREVIOUS TRIES
+      }
+    }
+    // now signature is a signature
+    // 4. See if the family with that signature exists within the created array,
+    // 4(a) if it does then add word to that family
+    // 4(b) if it does not, then create new family and add that word
+    if (len_temp != 0){
+      for (int k = 0; k < len_temp; k++){
+        Family fomlay = temp_fams[k];
+        if (strcmp(get_family_signature(&fomlay), signature) == 0){
+          // if family found
+          add_word_to_family(&fomlay, word_list[i]);
+        } else {
+          // if family not found then make new family
+          Family *fam = new_family(signature);
+          add_word_to_family(fam, word_list[i]);
+          temp_fams[len_temp] = *fam;
+          len_temp++;
+        }
+      }
+
+    } else {
+      // create new family, because there are none currently
+      Family *fam2 = new_family(signature);
+      add_word_to_family(fam2, word_list[i]);
+      temp_fams[len_temp] = *fam2;
+      len_temp++;
+    }
+    i++;
+  }
+  // 5. Link the families together
+  for (int m = 0; m < len_temp-1; m++){
+    temp_fams[m].next = &temp_fams[m+1];
+  }
+  temp_fams[len_temp-1].next = NULL;
+
+  // 6. Return the linked list
+  return temp_fams;
 }
 
 
 /* Return the signature of the family pointed to by fam. */
-char *get_family_signature(Family *fam) {
-    return NULL;
+char *get_family_signature(Family *fam) { // ADD A FREE FOR THIS
+  char *copy = malloc(sizeof(char) * strlen(fam->signature)); // free
+  strncpy(copy, (*fam).signature, strlen((*fam).signature));
+  return copy;
 }
 
 
@@ -111,13 +201,20 @@ char *get_family_signature(Family *fam) {
    As with fam->word_ptrs, the final pointer should be NULL.
 */
 char **get_new_word_list(Family *fam) {
-    return NULL;
+  // malloc these boys
+  char **new_array = malloc(sizeof(char *) * fam->num_words);
+  for (int i = 0; i < fam->num_words; i++){
+    new_array[i] = (fam->word_ptrs)[i];
+  }
+  return new_array;
 }
 
 
-/* Return a pointer to a random word from fam. 
+/* Return a pointer to a random word from fam.
    Use rand (man 3 rand) to generate random integers.
 */
 char *get_random_word_from_family(Family *fam) {
-    return NULL;
+  int random = rand();
+  random = random % (*fam).num_words;
+  return (*fam).word_ptrs[random];
 }
