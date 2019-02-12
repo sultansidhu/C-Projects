@@ -191,14 +191,14 @@ char *get_family_signature(Family *fam) {
    As with fam->word_ptrs, the final pointer should be NULL.
 */
 char **get_new_word_list(Family *fam) {
-  // malloc these boys
-  char **new_array = malloc(sizeof(char *) * fam->num_words);
+  char **new_array = malloc(sizeof(char *) * (fam->num_words+1));
   for (int i = 0; i < fam->num_words; i++){
     int length = strlen(fam->word_ptrs[i]);
     char *new_ptr = malloc(sizeof(char) * length);
     *new_ptr = *((fam->word_ptrs)[i]);
     new_array[i] = new_ptr;
   }
+  new_array[fam->num_words] = NULL;
   // put last index as a null
   return new_array;
 }

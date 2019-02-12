@@ -170,6 +170,7 @@ void play_round(char **words) {
         biggest_fam = find_biggest_family(famlist);
 
         sig = get_family_signature(biggest_fam);
+        printf("the family signature is %s\n", sig);
 
         /*Search signature for letters in current_word*/
         found = 0;
