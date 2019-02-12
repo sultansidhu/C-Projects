@@ -72,7 +72,6 @@ void add_word_to_family(Family *fam, char *word) {
   }
   fam->word_ptrs[fam->num_words] = word;
   fam->num_words++;
-  // check if dereferencing is needed within the function
 }
 
 
@@ -120,7 +119,12 @@ void deallocate_families(Family *fam_list) {
     free(current_fam_pt->word_ptrs);
     current_fam_pt = current_fam_pt->next;
   }
-  free(fam_list);
+  Family *fam_pt = fam_list;
+  while (fam_pt!= NULL){
+    Family *next = fam_pt->next;
+    free(fam_pt);
+    fam_pt = next;
+  }
 }
 
 
@@ -132,65 +136,51 @@ void deallocate_families(Family *fam_list) {
    that have at least one word from the current word_list.
 */
 Family *generate_families(char **word_list, char letter) {
-  // 1. Initialize a temporary array of created families, will hold them before linking
-  Family *temp_fams = malloc(sizeof(Family)); // FREE THIS
-  int len_temp = 0;
-  // 2. iterate over the word list
+  //initialize variables
   int i = 0;
-  while (word_list[i] != NULL){
-    // 3. For every word, generate its signature depending on the letter
-    char *signature = malloc(sizeof(char)*strlen(word_list[i])); // FREE THIS
-    strncpy(signature, word_list[i], strlen(word_list[i]));
-    // modify the word_copy
-    for (int j = 0; j < strlen(signature); j++){
+  Family *fam_linked_list = NULL;
+
+  //iterate through word_list
+  while(word_list[i] != NULL){
+    char *word = word_list[i];
+    char signature[strlen(word_list[i]+1)];
+    strncpy(signature, word, strlen(word_list[i]));
+    for (int j = 0; j < strlen(word_list[i]); j++){
       if (signature[j] != letter){
-        signature[j] = '-'; // FIGURE OUT HOW TO PRESERVE SIGNATURES COMING FROM PREVIOUS TRIES
+        signature[j] = '-';
       }
     }
-    // now signature is a signature
-    // 4. See if the family with that signature exists within the created array,
-    // 4(a) if it does then add word to that family
-    // 4(b) if it does not, then create new family and add that word
-    if (len_temp != 0){
-      for (int k = 0; k < len_temp; k++){
-        Family fomlay = temp_fams[k];
-        if (strcmp(get_family_signature(&fomlay), signature) == 0){
-          // if family found
-          add_word_to_family(&fomlay, word_list[i]);
-        } else {
-          // if family not found then make new family
-          Family *fam = new_family(signature);
-          add_word_to_family(fam, word_list[i]);
-          temp_fams[len_temp] = *fam;
-          len_temp++;
-        }
-      }
-
+    signature[strlen(signature)-1] = '\0';
+    // signature made, now search for family with that signature
+    Family *sigs_fam = find_family(fam_linked_list, signature);
+    if (sigs_fam == NULL){
+      //family not found, create new family
+      printf("creating new family now\n");
+      Family *new_fam = new_family(signature);
+      printf("new_fam signature: %s\n", new_fam->signature);
+      printf("adding new word to family below\n");
+      add_word_to_family(new_fam, word);
+      printf("new word added\n");
+      new_fam -> next = fam_linked_list;
+      printf("linked list link set to previous linked list\n");
+      fam_linked_list = new_fam;
+      printf("new family was created!\n");
     } else {
-      // create new family, because there are none currently
-      Family *fam2 = new_family(signature);
-      add_word_to_family(fam2, word_list[i]);
-      temp_fams[len_temp] = *fam2;
-      len_temp++;
+      //family found, add word to family
+      add_word_to_family(sigs_fam, word);
+      printf("word was added to family!\n");
     }
     i++;
   }
-  // 5. Link the families together
-  for (int m = 0; m < len_temp-1; m++){
-    temp_fams[m].next = &temp_fams[m+1];
-  }
-  temp_fams[len_temp-1].next = NULL;
-
-  // 6. Return the linked list
-  return temp_fams;
+  return fam_linked_list;
 }
 
 
 /* Return the signature of the family pointed to by fam. */
-char *get_family_signature(Family *fam) { // ADD A FREE FOR THIS
-  char *copy = malloc(sizeof(char) * strlen(fam->signature)); // free
-  strncpy(copy, (*fam).signature, strlen((*fam).signature));
-  return copy;
+char *get_family_signature(Family *fam) {
+  //char *copy = malloc(sizeof(char) * strlen(fam->signature)); // free
+  //strncpy(copy, (*fam).signature, strlen((*fam).signature));
+  return fam->signature;
 }
 
 
@@ -204,8 +194,12 @@ char **get_new_word_list(Family *fam) {
   // malloc these boys
   char **new_array = malloc(sizeof(char *) * fam->num_words);
   for (int i = 0; i < fam->num_words; i++){
-    new_array[i] = (fam->word_ptrs)[i];
+    int length = strlen(fam->word_ptrs[i]);
+    char *new_ptr = malloc(sizeof(char) * length);
+    *new_ptr = *((fam->word_ptrs)[i]);
+    new_array[i] = new_ptr;
   }
+  // put last index as a null
   return new_array;
 }
 
@@ -215,6 +209,6 @@ char **get_new_word_list(Family *fam) {
 */
 char *get_random_word_from_family(Family *fam) {
   int random = rand();
-  random = random % (*fam).num_words;
-  return (*fam).word_ptrs[random];
+  random = random % fam->num_words;
+  return fam->word_ptrs[random];
 }

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "family.h"
 #include "reading.h"
-#include <errno.c> // CHECK IF WE CAN DO THIS
+#include <errno.h> // CHECK IF WE CAN DO THIS
 
 #define BUF_SIZE	256
 
@@ -16,8 +16,30 @@
    Note: Do not make copies of the words.
 */
 char **prune_word_list(char **words, int len, int *words_remaining) {
-
-    return NULL;
+  int i = 0;
+  int count = 0;
+  int size = 0;
+  while (words[i] != NULL){
+    count++;
+    if(strlen(words[i]) == len){
+      size++;
+    }
+    i++;
+  }
+  *words_remaining = size;
+  // count represents the number of words in the list
+  char **pruned = malloc(sizeof(char *) * size);
+  int j = 0;
+  for (int k = 0; k < count; k++){
+    char *current = words[k];
+    //if length of current word is len
+    if (strlen(current) == len){
+      pruned[j] = current;
+      j++;
+      //*words_remaining++;
+    }
+  }
+  return pruned;
 }
 
 
@@ -44,53 +66,23 @@ void deallocate_pruned_word_list(char **word_list) {
     printf("There are no words of that length.\n");
 */
 char **get_word_list_of_length(char **words, int *len) {
-  char *length;
-  char **pruned;
-  int result;
   int words_remaining = 0;
-  printf("Length of words to use? ");
-  fgets(length, 10, stdin);
-  result = strtol(length, NULL, 10);
-  // do some error checking here
-  if (result == 0){
-    if (errno!=0){
-      exit(1);
+  char length[*len];
+  char **pruned = NULL;
+  char *ptr;
+  long int result = 7;
+  // first  - ask for length input
+
+  do{
+    printf("Length of words to use? ");
+    fgets(length, BUF_SIZE, stdin);
+    *len = strtol(length, &ptr, 10);
+    pruned = prune_word_list(words, *len, &words_remaining);
+    if (words_remaining == 0){
+      printf("There are no words of that length.\n");
     }
-  }
-  // set length to be the result
-  len = &result;
-  pruned = prune_word_list(words, result, &words_remaining)
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-  // define required variables
-  char *length;
-  int *words_remaining;
-  // get user input on length of required words
-  printf("Length of words to use? ");
-  fgets(length, 10, stdin);
-  result = strtol(length, NULL, 10);
-  // check if the input is valid
-  // TODO: PUT THIS INSIDE A WHILE LOOP
-  if (result == NULL){
-    exit(1);
-  } else {
-    *len = result;
-  }
-  // make call to prune_word_list function
-  pruned_list = prune_word_list(words, *len, words_remaining)
-
+  } while((result <= 0)||(words_remaining==0));
+  return pruned;
 }
 
 
