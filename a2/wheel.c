@@ -3,7 +3,6 @@
 #include <string.h>
 #include "family.h"
 #include "reading.h"
-#include <errno.h> // CHECK IF WE CAN DO THIS
 
 #define BUF_SIZE	256
 
@@ -16,31 +15,31 @@
    Note: Do not make copies of the words.
 */
 char **prune_word_list(char **words, int len, int *words_remaining) {
-  int i = 0;
-  int count = 0;
-  int size = 0;
-  while (words[i] != NULL){
-    count++;
-    if(strlen(words[i]) == len){
-      size++;
+    int i = 0;
+    int count = 0;
+    int size = 0;
+    while (words[i] != NULL){
+        count++;
+        if(strlen(words[i]) == len){
+            size++;
+        }
+        i++;
     }
-    i++;
-  }
-  *words_remaining = size;
-  // count represents the number of words in the list
-  char **pruned = malloc(sizeof(char *) * size + 1);
-  int j = 0;
-  for (int k = 0; k < count; k++){
-    char *current = words[k];
-    //if length of current word is len
-    if (strlen(current) == len){
-      pruned[j] = current;
-      j++;
-      //*words_remaining++;
+    *words_remaining = size;
+    // count represents the number of words in the list
+    char **pruned = malloc(sizeof(char *) * size + 1);
+    int j = 0;
+    for (int k = 0; k < count; k++){
+        char *current = words[k];
+        //if length of current word is len
+        if (strlen(current) == len){
+            pruned[j] = current;
+            j++;
+            //*words_remaining++;
+        }
     }
-  }
-  pruned[size] = NULL;
-  return pruned;
+    pruned[size] = NULL;
+    return pruned;
 }
 
 
@@ -67,23 +66,23 @@ void deallocate_pruned_word_list(char **word_list) {
     printf("There are no words of that length.\n");
 */
 char **get_word_list_of_length(char **words, int *len) {
-  int words_remaining = 0;
-  char length[*len];
-  char **pruned = NULL;
-  char *ptr;
-  long int result = 7;
-  // first  - ask for length input
+    int words_remaining = 0;
+    char length[*len];
+    char **pruned = NULL;
+    char *ptr;
+    long int result = 7;
+    // first  - ask for length input
 
-  do{
-    printf("Length of words to use? ");
-    fgets(length, BUF_SIZE, stdin);
-    *len = strtol(length, &ptr, 10);
-    pruned = prune_word_list(words, *len, &words_remaining);
-    if (words_remaining == 0){
-      printf("There are no words of that length.\n");
-    }
-  } while((result <= 0)||(words_remaining==0));
-  return pruned;
+    do{
+        printf("Length of words to use? ");
+        fgets(length, BUF_SIZE, stdin);
+        *len = strtol(length, &ptr, 10);
+        pruned = prune_word_list(words, *len, &words_remaining);
+        if (words_remaining == 0){
+            printf("There are no words of that length.\n");
+        }
+    } while((result <= 0)||(words_remaining==0));
+    return pruned;
 }
 
 
@@ -150,7 +149,7 @@ void play_round(char **words) {
         guesses = strtol(input_buffer, NULL, 10);
         if (guesses < 1 || guesses > 26) {
             printf("You entered an invalid number!\n\n");
-	}
+        }
     }
 
     /*Word starts off as all unknowns*/
@@ -171,7 +170,6 @@ void play_round(char **words) {
         biggest_fam = find_biggest_family(famlist);
 
         sig = get_family_signature(biggest_fam);
-        printf("the family signature is %s\n", sig);
 
         /*Search signature for letters in current_word*/
         found = 0;
@@ -202,7 +200,7 @@ void play_round(char **words) {
 
     if (guesses == 0) {
         printf("You lose! The word was %s.\n",
-                get_random_word_from_family(biggest_fam));
+               get_random_word_from_family(biggest_fam));
     }
 
     deallocate_pruned_word_list(word_list);
