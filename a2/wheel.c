@@ -28,7 +28,7 @@ char **prune_word_list(char **words, int len, int *words_remaining) {
   }
   *words_remaining = size;
   // count represents the number of words in the list
-  char **pruned = malloc(sizeof(char *) * size);
+  char **pruned = malloc(sizeof(char *) * size + 1);
   int j = 0;
   for (int k = 0; k < count; k++){
     char *current = words[k];
@@ -39,6 +39,7 @@ char **prune_word_list(char **words, int len, int *words_remaining) {
       //*words_remaining++;
     }
   }
+  pruned[size] = NULL;
   return pruned;
 }
 

@@ -53,10 +53,12 @@ Family *new_family(char *str) {
   Family fam;
     fam.num_words=0;
     fam.next=NULL;
+    fam.signature = malloc(sizeof(char) * strlen(str) + 1);
     strncpy(fam.signature, str, strlen(str));
+    fam.signature[strlen(str)] = '\0';
     fam.max_words=family_increment;
     fam.word_ptrs=malloc(sizeof(char *) * (family_increment + 1));
-  *fam_pt = fam;
+  fam_pt = &fam;
   return fam_pt;
 }
 
@@ -117,6 +119,7 @@ void deallocate_families(Family *fam_list) {
   Family *current_fam_pt = fam_list;
   while (current_fam_pt != NULL){
     free(current_fam_pt->word_ptrs);
+    free(current_fam_pt->signature);
     current_fam_pt = current_fam_pt->next;
   }
   Family *fam_pt = fam_list;
@@ -145,7 +148,7 @@ Family *generate_families(char **word_list, char letter) {
     char *word = word_list[i];
     char signature[strlen(word_list[i]+1)];
     strncpy(signature, word, strlen(word_list[i]));
-    for (int j = 0; j < strlen(word_list[i]); j++){
+    for (int j = 0; j <= strlen(word_list[i]); j++){
       if (signature[j] != letter){
         signature[j] = '-';
       }
