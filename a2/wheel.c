@@ -27,7 +27,7 @@ char **prune_word_list(char **words, int len, int *words_remaining) {
     }
     *words_remaining = size;
     // count represents the number of words in the list
-    char **pruned = malloc(sizeof(char *) * size + 1);
+    char **pruned = malloc(sizeof(char *) * (size + 1));
     int j = 0;
     for (int k = 0; k < count; k++){
         char *current = words[k];
@@ -67,16 +67,16 @@ void deallocate_pruned_word_list(char **word_list) {
 */
 char **get_word_list_of_length(char **words, int *len) {
     int words_remaining = 0;
-    char length[*len];
+    char length[BUF_SIZE];
     char **pruned = NULL;
-    char *ptr;
+    //char *ptr;
     long int result = 7;
     // first  - ask for length input
 
     do{
         printf("Length of words to use? ");
         fgets(length, BUF_SIZE, stdin);
-        *len = strtol(length, &ptr, 10);
+        *len = strtol(length, NULL, 10);
         pruned = prune_word_list(words, *len, &words_remaining);
         if (words_remaining == 0){
             printf("There are no words of that length.\n");
@@ -167,6 +167,7 @@ void play_round(char **words) {
         guess = get_next_guess(letters_guessed);
         deallocate_families(famlist);
         famlist = generate_families(word_list, guess);
+        //print_families(famlist);
         biggest_fam = find_biggest_family(famlist);
 
         sig = get_family_signature(biggest_fam);

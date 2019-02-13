@@ -70,11 +70,11 @@ Family *new_family(char *str) {
 */
 void add_word_to_family(Family *fam, char *word) { // MIGHT HAVE FIXED THE PROBLEM //TODO LOOK AT DIS
     if (fam->max_words == fam->num_words){
-        char **temp_ptr = realloc(fam->word_ptrs, (unsigned long)(fam->max_words) + family_increment);
+        char **temp_ptr = realloc(fam->word_ptrs, (fam->max_words + family_increment)*(sizeof(char *)));
         fam->word_ptrs = temp_ptr;
         //fam->word_ptrs=realloc(fam->word_ptrs, (unsigned long)(fam->max_words) + family_increment);
         fam->max_words = fam->max_words + family_increment;
-        fam->word_ptrs[fam->max_words] = NULL;//newly added
+        fam->word_ptrs[fam->max_words-1] = NULL;//newly added
     }
     fam->word_ptrs[fam->num_words] = word;
     fam->num_words++;
@@ -153,12 +153,12 @@ Family *generate_families(char **word_list, char letter) {
         char *word = word_list[i];
         char signature[strlen(word_list[i])+1];
         strncpy(signature, word, strlen(word_list[i]));
-        for (int j = 0; j <= strlen(word_list[i]); j++){
+        for (int j = 0; j < strlen(word_list[i]); j++){
             if (signature[j] != letter){
                 signature[j] = '-';
             }
         }
-        signature[strlen(signature)-1] = '\0';
+        signature[strlen(word_list[i])-1] = '\0';
         // signature made, now search for family with that signature
         Family *sigs_fam = find_family(fam_linked_list, signature);
         if (sigs_fam == NULL){
