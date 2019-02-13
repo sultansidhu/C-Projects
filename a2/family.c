@@ -70,7 +70,7 @@ Family *new_family(char *str) {
 */
 void add_word_to_family(Family *fam, char *word) { // MIGHT HAVE FIXED THE PROBLEM //TODO LOOK AT DIS
     if (fam->max_words == fam->num_words){
-        char **temp_ptr = realloc(fam->word_ptrs, (fam->max_words + family_increment)*(sizeof(char *)));
+        char **temp_ptr = realloc(fam->word_ptrs, (fam->max_words + family_increment + 1)*(sizeof(char *)));
         fam->word_ptrs = temp_ptr;
         //fam->word_ptrs=realloc(fam->word_ptrs, (unsigned long)(fam->max_words) + family_increment);
         fam->max_words = fam->max_words + family_increment;
@@ -78,6 +78,7 @@ void add_word_to_family(Family *fam, char *word) { // MIGHT HAVE FIXED THE PROBL
     }
     fam->word_ptrs[fam->num_words] = word;
     fam->num_words++;
+    fam->word_ptrs[fam->num_words] = NULL;
     counter++;
 }
 
