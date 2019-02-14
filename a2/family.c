@@ -167,7 +167,7 @@ Family *generate_families(char **word_list, char letter) {
                 signature[j] = '-';
             }
         }
-        signature[strlen(word_list[i])-1] = '\0';
+        signature[strlen(word_list[i])] = '\0';//changed
         // signature made, now search for family with that signature
         Family *sigs_fam = find_family(fam_linked_list, signature);
         if (sigs_fam == NULL){

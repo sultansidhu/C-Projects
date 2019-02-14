@@ -175,6 +175,10 @@ void play_round(char **words) {
         famlist = generate_families(word_list, guess);
         biggest_fam = find_biggest_family(famlist);
 
+
+
+
+
         sig = get_family_signature(biggest_fam);
 
         /*Search signature for letters in current_word*/
@@ -202,6 +206,7 @@ void play_round(char **words) {
         }
         deallocate_pruned_word_list(word_list);
         word_list = get_new_word_list(biggest_fam);
+
     }
 
     if (guesses == 0) {
