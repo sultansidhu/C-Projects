@@ -35,7 +35,6 @@ char **prune_word_list(char **words, int len, int *words_remaining) {
         if (strlen(current) == len){
             pruned[j] = current;
             j++;
-            //*words_remaining++;
         }
     }
     pruned[size] = NULL;
@@ -69,7 +68,6 @@ char **get_word_list_of_length(char **words, int *len) {
     int words_remaining = 0;
     char length[BUF_SIZE];
     char **pruned = NULL;
-    //char *ptr;
     long int result = 7;
     // first  - ask for length input
 
@@ -167,7 +165,6 @@ void play_round(char **words) {
         guess = get_next_guess(letters_guessed);
         deallocate_families(famlist);
         famlist = generate_families(word_list, guess);
-        //print_families(famlist);
         biggest_fam = find_biggest_family(famlist);
 
         sig = get_family_signature(biggest_fam);

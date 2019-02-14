@@ -48,7 +48,6 @@ void print_families(Family* fam_list) {
    maxwords to family_increment, and next to NULL.
 */
 Family *new_family(char *str) {
-    //char **words[family_increment+1]
     Family *fam_pt = malloc(sizeof(Family));
     Family fam;
     fam.num_words=0;
@@ -58,7 +57,7 @@ Family *new_family(char *str) {
     fam.signature[strlen(str)] = '\0';
     fam.max_words=family_increment;
     fam.word_ptrs=malloc(sizeof(char *) * (family_increment + 1));
-    fam.word_ptrs[family_increment] = NULL; // newly added
+    fam.word_ptrs[family_increment] = NULL;
     *fam_pt = fam;
     return fam_pt;
 }
@@ -68,13 +67,12 @@ Family *new_family(char *str) {
    If fam->word_ptrs is full, first use realloc to allocate family_increment
    more pointers and then add the new pointer.
 */
-void add_word_to_family(Family *fam, char *word) { // MIGHT HAVE FIXED THE PROBLEM //TODO LOOK AT DIS
+void add_word_to_family(Family *fam, char *word) {
     if (fam->max_words == fam->num_words){
         char **temp_ptr = realloc(fam->word_ptrs, (fam->max_words + family_increment + 1)*(sizeof(char *)));
         fam->word_ptrs = temp_ptr;
-        //fam->word_ptrs=realloc(fam->word_ptrs, (unsigned long)(fam->max_words) + family_increment);
         fam->max_words = fam->max_words + family_increment;
-        fam->word_ptrs[fam->max_words-1] = NULL;//newly added
+        fam->word_ptrs[fam->max_words-1] = NULL;
     }
     fam->word_ptrs[fam->num_words] = word;
     fam->num_words++;
@@ -169,15 +167,6 @@ Family *generate_families(char **word_list, char letter) {
             new_fam -> next = fam_linked_list;
             fam_linked_list = new_fam;
         } else {
-            //printf("#####delete this#####\n");
-            //printf("sigs fam has num words %d\n", sigs_fam->num_words);
-            //int m = 0;
-           // while(sigs_fam->word_ptrs[m] != NULL){
-               // m++;
-            //}
-            //printf("sizeof sigs fam-> wordsptrs is %d\n", m);
-            //printf("######## delete till here#####\n");
-            // TODO: REMEMBER TO SET ARRAYS ENDS TO NULL, WHICH IS PROBABLY CAUSING THIS PROBLEM6, wherever you see "//newly added", the feature has been accommodated.
             //family found, add word to family
             add_word_to_family(sigs_fam, word);
         }
@@ -189,8 +178,6 @@ Family *generate_families(char **word_list, char letter) {
 
 /* Return the signature of the family pointed to by fam. */
 char *get_family_signature(Family *fam) {
-    //char *copy = malloc(sizeof(char) * strlen(fam->signature)); // free
-    //strncpy(copy, (*fam).signature, strlen((*fam).signature));
     return fam->signature;
 }
 
@@ -204,8 +191,6 @@ char *get_family_signature(Family *fam) {
 char **get_new_word_list(Family *fam) {
     char **new_array = malloc(sizeof(char *) * (fam->num_words+1));
     for (int i = 0; i < fam->num_words; i++){
-        // TODO: PROBLEM IS THAT THE NUM WORDS IS SUPPOSED TO BE EQUAL TO NUMBER OF THINGS IN WORD_PTRS
-        // TODO: DONT MALLOC THE INDIVIDUAL THINGS INSIDE, ONLY THE NEW ARRAY ITSELF IS MALLOC'D
         char *newptr = ((fam->word_ptrs)[i]);
         new_array[i] = newptr;
     }
