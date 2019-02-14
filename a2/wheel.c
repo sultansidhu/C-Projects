@@ -78,10 +78,6 @@ char **get_word_list_of_length(char **words, int *len) {
     do{
         printf("Length of words to use? ");
         fgets(length, BUF_SIZE, stdin);
-        if (fgets(length, BUF_SIZE, stdin) == NULL){
-            fprintf(stderr, "fgets error in get_word_list_of_length: invalid argument");
-            exit(1);
-        }
         *len = strtol(length, NULL, 10);
         pruned = prune_word_list(words, *len, &words_remaining);
         if (pruned==NULL){
