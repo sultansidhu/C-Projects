@@ -28,6 +28,10 @@ char **prune_word_list(char **words, int len, int *words_remaining) {
     *words_remaining = size;
     // count represents the number of words in the list
     char **pruned = malloc(sizeof(char *) * (size + 1));
+    if (pruned == NULL){
+        perror("malloc");
+        exit(1);
+    }
     int j = 0;
     for (int k = 0; k < count; k++){
         char *current = words[k];
@@ -74,8 +78,16 @@ char **get_word_list_of_length(char **words, int *len) {
     do{
         printf("Length of words to use? ");
         fgets(length, BUF_SIZE, stdin);
+        if (fgets(length, BUF_SIZE, stdin) == NULL){
+            fprintf(stderr, "fgets error in get_word_list_of_length: invalid argument");
+            exit(1);
+        }
         *len = strtol(length, NULL, 10);
         pruned = prune_word_list(words, *len, &words_remaining);
+        if (pruned==NULL){
+            fprintf(stderr, "null pointer returned by prune_word_list");
+            exit(1);
+        }
         if (words_remaining == 0){
             printf("There are no words of that length.\n");
         }
