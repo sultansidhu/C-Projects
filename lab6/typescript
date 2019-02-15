@@ -1,0 +1,963 @@
+Script started on Fri 15 Feb 2019 10:49:53 AM EST
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ gcc -g -Wall -std=gnu99 -o overflow overfl ow.c
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ gdb ob[Kverflow
+GNU gdb (Ubuntu 7.11.1-0ubuntu1~16.5) 7.11.1
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from overflow...done.
+(gdb) list
+1	#include <stdio.h>
+2	
+3	#define SIZE 4
+4	#define OVERFLOW 4
+5	
+6	int main() {
+7	    int index = 0;
+8	    int i;
+9	    int before[SIZE] = {10, 10, 10, 10};
+10	    int a[SIZE] = {0, 0, 0, 0};
+(gdb) break 14
+Breakpoint 1 at 0x4006a2: file overflow.c, line 14.
+(gdb) reak[K[K[K[Kbreak 36
+Breakpoint 2 at 0x40082f: file overflow.c, line 36.
+(gdb) run
+Starting program: /h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6/overflow 
+Address of the variables:
+
+Breakpoint 1, main () at overflow.c:14
+14	    for (index = 0; index < SIZE; index++) {
+(gdb) next[K[K[K[Kdisplay after[3]
+1: after[3] = 10
+(gdb) next
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe600 -> &after[0]
+14	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe604 -> &after[1]
+14	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe608 -> &after[2]
+14	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe60c -> &after[3]
+14	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+17	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+18	        printf("%lx -> &a[%d]\n", (unsigned long) &a[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe5f0 -> &a[0]
+17	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+18	        printf("%lx -> &a[%d]\n", (unsigned long) &a[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe5f4 -> &a[1]
+17	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+18	        printf("%lx -> &a[%d]\n", (unsigned long) &a[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe5f8 -> &a[2]
+17	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+18	        printf("%lx -> &a[%d]\n", (unsigned long) &a[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe5fc -> &a[3]
+17	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+20	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+21	        printf("%lx -> &before[%d]\n", (unsigned long) &before[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe5e0 -> &before[0]
+20	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+21	        printf("%lx -> &before[%d]\n", (unsigned long) &before[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe5e4 -> &before[1]
+20	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+21	        printf("%lx -> &before[%d]\n", (unsigned long) &before[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe5e8 -> &before[2]
+20	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+21	        printf("%lx -> &before[%d]\n", (unsigned long) &before[index], index);
+1: after[3] = 10
+(gdb) 
+7fffffffe5ec -> &before[3]
+20	    for (index = 0; index < SIZE; index++) {
+1: after[3] = 10
+(gdb) 
+23	    printf("%lx -> &i\n", (unsigned long)&i);
+1: after[3] = 10
+(gdb) 
+7fffffffe5dc -> &i
+24	    printf("%lx -> &index\n", (unsigned long)&index);
+1: after[3] = 10
+(gdb) continue
+Continuing.
+7fffffffe5d8 -> &index
+
+Initial values:
+i = 0
+before = {10, 10, 10, 10}
+a = {0, 0, 0, 0}
+after = {10, 10, 10, 10}
+
+
+Breakpoint 2, main () at overflow.c:36
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: after[3] = 10
+(gdb) next[K[K[K[Kdisplay after [K[0]
+2: after[0] = 10
+(gdb) display a[3]
+3: a[3] = 0
+(gdb) si[K[Kdisplay &a[3]
+4: &a[3] = (int *) 0x7fffffffe5fc
+(gdb) dpslya[K[K[K[K[K[Kdisplay &[[Kafter[0]
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) next
+37	        a[i] = i * 10;
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 0
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 0, 0, 0}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {10, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+37	        a[i] = i * 10;
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 1
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 10, 0, 0}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {10, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+37	        a[i] = i * 10;
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 2
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 10, 20, 0}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {10, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+37	        a[i] = i * 10;
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 0
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 30
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 3
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 30
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 30
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 10, 20, 30}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 30
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {10, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 30
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+44	    return 0;
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 30
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+45	}
+1: after[3] = 10
+2: after[0] = 10
+3: a[3] = 30
+4: &a[3] = (int *) 0x7fffffffe5fc
+5: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+__libc_start_main (main=0x400626 <main>, argc=1, argv=0x7fffffffe708, 
+    init=<optimized out>, fini=<optimized out>, rtld_fini=<optimized out>, 
+    stack_end=0x7fffffffe6f8) at ../csu/libc-start.c:325
+325	../csu/libc-start.c: No such file or directory.
+(gdb) 
+[Inferior 1 (process 14412) exited normally]
+(gdb) 
+The program is not being run.
+(gdb) # That was the program, running when OVERFLOW I[Kis i[Ksizew [K[K 5[K4, now changing to 5 [A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K5
+(gdb) quit
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ gcc -[K[K[K[K[Kgdb overflowcc -g -Wall -std=gnu99 -o overflow overfloow.c
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ gdb overflow
+GNU gdb (Ubuntu 7.11.1-0ubuntu1~16.5) 7.11.1
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from overflow...done.
+(gdb) break 14
+Breakpoint 1 at 0x4006a2: file overflow.c, line 14.
+(gdb) break
+No default breakpoint address now.
+(gdb) break 36
+Breakpoint 2 at 0x40082f: file overflow.c, line 36.
+(gdb) run
+Starting program: /h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6/overflow 
+Address of the variables:
+
+Breakpoint 1, main () at overflow.c:14
+14	    for (index = 0; index < SIZE; index++) {
+(gdb) display a[3]
+1: a[3] = 0
+(gdb) display after[0]
+2: after[0] = 10
+(gdb) display &a[3]
+3: &a[3] = (int *) 0x7fffffffe5fc
+(gdb) display &after[0]
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) run[K[K[Krun
+The program being debugged has been started already.
+Start it from the beginning? (y or n) n
+Program not restarted.
+(gdb) next
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+7fffffffe600 -> &after[0]
+14	    for (index = 0; index < SIZE; index++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+7fffffffe604 -> &after[1]
+14	    for (index = 0; index < SIZE; index++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+7fffffffe608 -> &after[2]
+14	    for (index = 0; index < SIZE; index++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+7fffffffe60c -> &after[3]
+14	    for (index = 0; index < SIZE; index++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+17	    for (index = 0; index < SIZE; index++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+18	        printf("%lx -> &a[%d]\n", (unsigned long) &a[index], index);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) continue
+Continuing.
+7fffffffe5f0 -> &a[0]
+7fffffffe5f4 -> &a[1]
+7fffffffe5f8 -> &a[2]
+7fffffffe5fc -> &a[3]
+7fffffffe5e0 -> &before[0]
+7fffffffe5e4 -> &before[1]
+7fffffffe5e8 -> &before[2]
+7fffffffe5ec -> &before[3]
+7fffffffe5dc -> &i
+7fffffffe5d8 -> &index
+
+Initial values:
+i = 0
+before = {10, 10, 10, 10}
+a = {0, 0, 0, 0}
+after = {10, 10, 10, 10}
+
+
+Breakpoint 2, main () at overflow.c:36
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) next
+37	        a[i] = i * 10;
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 0
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 0, 0, 0}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {10, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+37	        a[i] = i * 10;
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 1
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 10, 0, 0}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {10, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+37	        a[i] = i * 10;
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 2
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 10, 20, 0}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {10, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+37	        a[i] = i * 10;
+1: a[3] = 0
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: a[3] = 30
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 3
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: a[3] = 30
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: a[3] = 30
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 10, 20, 30}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: a[3] = 30
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {10, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: a[3] = 30
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+37	        a[i] = i * 10;
+1: a[3] = 30
+2: after[0] = 10
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+38	        printf("i = %d\n", i);
+1: a[3] = 30
+2: after[0] = 40
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+i = 4
+39	        printf("before = {%d, %d, %d, %d}\n", before[0], before[1], before[2], before[3]);
+1: a[3] = 30
+2: after[0] = 40
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+before = {10, 10, 10, 10}
+40	        printf("a = {%d, %d, %d, %d}\n", a[0], a[1], a[2], a[3]);
+1: a[3] = 30
+2: after[0] = 40
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+a = {0, 10, 20, 30}
+41	        printf("after = {%d, %d, %d, %d}\n", after[0], after[1], after[2], after[3]);
+1: a[3] = 30
+2: after[0] = 40
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+after = {40, 10, 10, 10}
+36	    for (i = 0; i < OVERFLOW; i++) {
+1: a[3] = 30
+2: after[0] = 40
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+44	    return 0;
+1: a[3] = 30
+2: after[0] = 40
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+45	}
+1: a[3] = 30
+2: after[0] = 40
+3: &a[3] = (int *) 0x7fffffffe5fc
+4: &after[0] = (int *) 0x7fffffffe600
+(gdb) 
+__libc_start_main (main=0x400626 <main>, argc=1, argv=0x7fffffffe708, 
+    init=<optimized out>, fini=<optimized out>, rtld_fini=<optimized out>, 
+    stack_end=0x7fffffffe6f8) at ../csu/libc-start.c:325
+325	../csu/libc-start.c: No such file or directory.
+(gdb) 
+[Inferior 1 (process 19124) exited normally]
+(gdb) quit
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ # this time, ove[K[Kbsr[Kerve the value of i [K, the o v[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K O VERFLOW i s[K[Ks being set back to 5[K4
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ # this time, observe the value of i, the OVVERFLOW is being set back to 4[A[C[C[C[C[C[C[C[Cgdb overflow[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccc -g -Wall -std=gnu99 -o overflow overfloow.c
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ ./overflow
+Address of the variables:
+7ffe3641e820 -> &after[0]
+7ffe3641e824 -> &after[1]
+7ffe3641e828 -> &after[2]
+7ffe3641e82c -> &after[3]
+7ffe3641e810 -> &a[0]
+7ffe3641e814 -> &a[1]
+7ffe3641e818 -> &a[2]
+7ffe3641e81c -> &a[3]
+7ffe3641e800 -> &before[0]
+7ffe3641e804 -> &before[1]
+7ffe3641e808 -> &before[2]
+7ffe3641e80c -> &before[3]
+7ffe3641e7fc -> &i
+7ffe3641e7f8 -> &index
+
+Initial values:
+i = 0
+before = {10, 10, 10, 10}
+a = {0, 0, 0, 0}
+after = {10, 10, 10, 10}
+
+i = 0
+before = {10, 10, 10, 10}
+a = {0, 0, 0, 0}
+after = {10, 10, 10, 10}
+i = 1
+before = {10, 10, 10, 10}
+a = {0, 10, 0, 0}
+after = {10, 10, 10, 10}
+i = 2
+before = {10, 10, 10, 10}
+a = {0, 10, 20, 0}
+after = {10, 10, 10, 10}
+i = 3
+before = {10, 10, 10, 10}
+a = {0, 10, 20, 30}
+after = {10, 10, 10, 10}
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ gdb[K[K[K# and now, setting the value o [Kf overflow o f [K[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Kt[K t o 5 we get the value of i changed
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ # and now, setting the value of overflow too 5 we get the value of i changed[A[C[C[C[C[C./overflow[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgcc -g -Wall -std=gnu99 -o overflow overfloow.c
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ gcc -g -Wall -std=gnu99 -o overflow overfloow.c[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C# and now, setting the value of overflow to 5 we get the value of i changed[A[C[C[C[C[C./overflow[K
+[K[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C
+Address of the variables:
+7ffe232e52b0 -> &after[0]
+7ffe232e52b4 -> &after[1]
+7ffe232e52b8 -> &after[2]
+7ffe232e52bc -> &after[3]
+7ffe232e52a0 -> &a[0]
+7ffe232e52a4 -> &a[1]
+7ffe232e52a8 -> &a[2]
+7ffe232e52ac -> &a[3]
+7ffe232e5290 -> &before[0]
+7ffe232e5294 -> &before[1]
+7ffe232e5298 -> &before[2]
+7ffe232e529c -> &before[3]
+7ffe232e528c -> &i
+7ffe232e5288 -> &index
+
+Initial values:
+i = 1952802655
+before = {10, 10, 10, 10}
+a = {0, 0, 0, 0}
+after = {10, 10, 10, 10}
+
+i = 0
+before = {10, 10, 10, 10}
+a = {0, 0, 0, 0}
+after = {10, 10, 10, 10}
+i = 1
+before = {10, 10, 10, 10}
+a = {0, 10, 0, 0}
+after = {10, 10, 10, 10}
+i = 2
+before = {10, 10, 10, 10}
+a = {0, 10, 20, 0}
+after = {10, 10, 10, 10}
+i = 3
+before = {10, 10, 10, 10}
+a = {0, 10, 20, 30}
+after = {10, 10, 10, 10}
+i = 4
+before = {10, 10, 10, 10}
+a = {0, 10, 20, 30}
+after = {40, 10, 10, 10}
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ # thep [K[K program will now be debugged to see  what went wrong and where
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ gdb overw[Kflow
+GNU gdb (Ubuntu 7.11.1-0ubuntu1~16.5) 7.11.1
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from overflow...done.
+(gdb) break 8
+Breakpoint 1 at 0x400644: file overflow.c, line 8.
+(gdb) break 23
+Breakpoint 2 at 0x400771: file overflow.c, line 23.
+(gdb) break
+No default breakpoint address now.
+(gdb)  [Kbreak 29
+Breakpoint 3 at 0x4007b1: file overflow.c, line 29.
+(gdb) break 37
+Breakpoint 4 at 0x40083b: file overflow.c, line 37.
+(gdb) display 
+(gdb) display i
+No symbol "i" in current context.
+(gdb) run[K[K[Krun
+Starting program: /h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6/overflow 
+
+Breakpoint 1, main () at overflow.c:9
+9	    int before[SIZE] = {10, 10, 10, 10};
+(gdb) display io
+No symbol "io" in current context.
+(gdb) display i
+1: i = 0
+(gdb) next
+10	    int a[SIZE] = {0, 0, 0, 0};
+1: i = 0
+(gdb) 
+11	    int after[SIZE] = {10, 10, 10, 10};
+1: i = 0
+(gdb) 
+13	    printf("Address of the variables:\n");
+1: i = 0
+(gdb) 
+Address of the variables:
+14	    for (index = 0; index < SIZE; index++) {
+1: i = 0
+(gdb) 
+15	        printf("%lx -> &after[%d]\n", (unsigned long) &after[index], index);
+1: i = 0
+(gdb) continue
+Continuing.
+7fffffffe600 -> &after[0]
+7fffffffe604 -> &after[1]
+7fffffffe608 -> &after[2]
+7fffffffe60c -> &after[3]
+7fffffffe5f0 -> &a[0]
+7fffffffe5f4 -> &a[1]
+7fffffffe5f8 -> &a[2]
+7fffffffe5fc -> &a[3]
+7fffffffe5e0 -> &before[0]
+7fffffffe5e4 -> &before[1]
+7fffffffe5e8 -> &before[2]
+7fffffffe5ec -> &before[3]
+
+Breakpoint 2, main () at overflow.c:23
+23	    printf("%lx -> &i\n", (unsigned long)&i);
+1: i = 0
+(gdb) 
+Continuing.
+7fffffffe5dc -> &i
+7fffffffe5d8 -> &index
+
+Initial values:
+
+Breakpoint 3, main () at overflow.c:29
+29	    printf("i = %d\n", i);
+1: i = 0
+(gdb) 
+Continuing.
+i = 0
+before = {10, 10, 10, 10}
+a = {0, 0, 0, 0}
+after = {10, 10, 10, 10}
+
+
+Breakpoint 4, main () at overflow.c:37
+37	        a[i] = i * 10;
+1: i = 0
+(gdb) 
+Continuing.
+i = 0
+before = {10, 10, 10, 10}
+a = {0, 0, 0, 0}
+after = {10, 10, 10, 10}
+
+Breakpoint 4, main () at overflow.c:37
+37	        a[i] = i * 10;
+1: i = 1
+(gdb) 
+Continuing.
+i = 1
+before = {10, 10, 10, 10}
+a = {0, 10, 0, 0}
+after = {10, 10, 10, 10}
+
+Breakpoint 4, main () at overflow.c:37
+37	        a[i] = i * 10;
+1: i = 2
+(gdb) 
+Continuing.
+i = 2
+before = {10, 10, 10, 10}
+a = {0, 10, 20, 0}
+after = {10, 10, 10, 10}
+
+Breakpoint 4, main () at overflow.c:37
+37	        a[i] = i * 10;
+1: i = 3
+(gdb) 
+Continuing.
+i = 3
+before = {10, 10, 10, 10}
+a = {0, 10, 20, 30}
+after = {10, 10, 10, 10}
+
+Breakpoint 4, main () at overflow.c:37
+37	        a[i] = i * 10;
+1: i = 4
+(gdb) 
+Continuing.
+i = 4
+before = {10, 10, 10, 10}
+a = {0, 10, 20, 30}
+after = {40, 10, 10, 10}
+[Inferior 1 (process 22733) exited normally]
+(gdb) 
+The program is not being run.
+(gdb) 
+The program is not being run.
+(gdb) 
+The program is not being run.
+(gdb) qui
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ qui[K[K[K# the pgor[K[K[Kroblems I found when overflow becam e 5 was[K[Ker that[K[K[K[K[K[Ke t[K[K[Kre that i b[Kwas initialized as a very large ba[K[Kvalue, and the changes taking pl ace in a le[K[K[Krray a ll[Keaked into array after
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ qui[K[K[Kquite[K script
+bash: quit: command not found
+]0;sidhusul@nxsrv:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab6nxsrv:~/Desktop/CSC209/sidhusul/lab6$ exit
