@@ -12,8 +12,22 @@
  */
 
 char *copy(char *dest, const char *src, int capacity) {
-
-
+  int len_dest = sizeof(dest) / sizeof(char);
+  if (capacity >= len_dest){
+    // more space needed
+    for (int i = 0; i < len_dest-1 ; i++){
+      dest[i] = src[i];
+    }
+    dest[len_dest-1] = '\0';
+  } else {
+    // space suffices
+    for (int i = 0; i < capacity; i++){
+      dest[i] = src[i];
+    }
+    for (int j = capacity; j<len_dest; j++){
+      dest[j] = '\0';
+    }
+  }
     return dest;
 }
 
