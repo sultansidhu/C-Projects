@@ -20,11 +20,11 @@ FILE * Fopen(char * filename, char * mode){
   return fp;
 }
 
-struct rec get_minimum_struct(struct rec * record_array, int num_processes){
-  struct rec minimum = record_array[0];
+int get_minimum_struct_index(struct rec * record_array, int num_processes){
+  int minimum = 0;
   for (int i = 0; i < num_processes; i++){
     if (compare_freq(&(record_array[i]), &(minimum)) < 0){
-      minimum = record_array[i];
+      minimum = i;
     }
   }
   return minimum;
@@ -116,7 +116,6 @@ int main(int argc, char* argv[]){
         check_usage();
       }
   }
-  printf("ERROR: WRONG FLAGS AREN'T POINTED OUT, FIX IT\n");
 
   // get file size using helper
 
@@ -141,7 +140,6 @@ int main(int argc, char* argv[]){
     fread(&temporary_record, sizeof(struct rec), 1, fp);
     unsorted_records[j] = temporary_record;
   }
-  printf("CHECK IF THIS CODE BLOCK IS NEEDED.\n");
   printf("In this new design the child doesn't read, but takes in the unsorted records from\n");
   // read(fd[i][0], &(temp[i]), sizeof(struct rec));
   // printf("temp[i] contains %s with freq %d\n", temp[i].word, temp[i].freq);
@@ -216,25 +214,41 @@ int main(int argc, char* argv[]){
       int exit_sig;
       int result = Wait(&exit_sig);
 
+      printf("TODO: check exit sigs\n");
+
       // reading it into the reading ends of the pipe
 
-      read(fd[i][0], &(temp[i]), sizeof(struct rec));
+      // read(fd[i][0], &(temp[i]), sizeof(struct rec));
+      //printf("temp[i] contains %s with freq %d\n", temp[i].word, temp[i].freq);
+      // read(fd[i][0], &(temp[i]), sizeof(struct rec));
       // printf("temp[i] contains %s with freq %d\n", temp[i].word, temp[i].freq);
-      printf("FIGURE OUT WHAT TO PRINT WHEN END OF PIPE IS REACHED FOR ONE PIPE AND NOT FOR THE OTHER\n");
+      //printf("FIGURE OUT WHAT TO PRINT WHEN END OF PIPE IS REACHED FOR ONE PIPE AND NOT FOR THE OTHER\n");
 
     }  // else block
   } // for loop block
 
   // merge the results together
 
+  for (int c = 0; c < num_processes; c++){
+    read(fd[c][0], &(temp[c]), sizeof(struct rec));
+  }
+
   // take the minimum from temp and then dump it into the output file
 
-  printf("code block directly below doesn't work\n");
+  // printf("code block directly below doesn't work\n");
   for (int h = 0; h < num_entries; h++){
-    struct rec minimum = get_minimum_struct(temp, num_processes);
-    printf("figure out how to use dup2 here to write the struct to the file\n");
-    printf("code doesn't work because fwrite is called instead of write\n");
-    fwrite(out, sizeof(struct rec), 1, out);
+    int minimum = get_minimum_struct_index(temp, num_processes);
+    // printf("figure out how to use dup2 here to write the struct to the file\n");
+    // printf("code doesn't work because fwrite is called instead of write\n");
+
+
+    // dup2(fd[h][0], STDOUT_FILENO);
+    // write(fd[h][0], out, sizeof(struct rec));
+
+
+    fwrite(&(temp[minimum]), sizeof(struct rec), 1, out);
+    printf("the entry is %s and the freq is  %d\n", temp[minimum].word, temp[minimum].freq);
+
   }
 
   // close the reading ends of the fd
