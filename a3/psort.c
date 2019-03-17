@@ -105,10 +105,15 @@ int main(int argc, char* argv[]){
     switch(opt){
       case 'n':
         num_processes = strtol(optarg, NULL, 10);
+        break;
       case 'f':
         filename = optarg;
+        break;
       case 'o':
         output = optarg;
+        break;
+      default:
+        check_usage();
       }
   }
   printf("ERROR: WRONG FLAGS AREN'T POINTED OUT, FIX IT\n");
@@ -138,6 +143,8 @@ int main(int argc, char* argv[]){
   }
   printf("CHECK IF THIS CODE BLOCK IS NEEDED.\n");
   printf("In this new design the child doesn't read, but takes in the unsorted records from\n");
+  // read(fd[i][0], &(temp[i]), sizeof(struct rec));
+  // printf("temp[i] contains %s with freq %d\n", temp[i].word, temp[i].freq);
 
   // create the pipes that will be used for communication
 
@@ -243,4 +250,5 @@ int main(int argc, char* argv[]){
   free(unsorted_records);
   fclose(fp);
   fclose(out);
+  return 0;
 } // end of main
