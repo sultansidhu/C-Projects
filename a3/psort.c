@@ -159,7 +159,7 @@ int main(int argc, char* argv[]){
         num_processes = strtol(optarg, NULL, 10);
         if (num_processes < 1){
           printf("Invalid argument: number of processes must be greater than 0\n");
-          exit(1);
+          exit(0);
         }
         break;
       case 'f':
@@ -177,6 +177,10 @@ int main(int argc, char* argv[]){
 
   int filesize = get_file_size(filename);
   int num_entries = filesize / sizeof(struct rec);
+  if (num_entries < 1){
+    fprintf(stderr, "There are no records to read from file.\n");
+    exit(0);
+  }
 
   // generate pipes
   int min_entity = 0;
@@ -245,7 +249,6 @@ int main(int argc, char* argv[]){
   struct rec minimum_rec;
   int minimum_index;
   FILE * fp_out = Fopen(output, "wb");
-
   for (int e = 0; e < num_entries; e++){
     get_minimum_struct(&minimum_rec, &minimum_index, buffer, min_entity);
     Fwrite(&minimum_rec, sizeof(struct rec), 1, fp_out);
