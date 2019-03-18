@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
 #include "helper.h"
+// THIS WILL BE THE NEW VERSION
 
 // checker and wrapper functions
 
@@ -14,54 +16,19 @@ void check_usage(){
 FILE * Fopen(char * filename, char * mode){
   FILE * fp = fopen(filename, mode);
   if (fp == NULL){
-    fprintf(stderr, "fopen failure; no such file exists\n");
+    fprintf(stderr, "fopen failure\n");
     exit(1);
   }
   return fp;
 }
 
-int get_minimum_struct_index(struct rec * record_array, int num_processes){
-  int minimum = 0;
-  for (int i = 0; i < num_processes; i++){
-    if (compare_freq(&(record_array[i]), &(minimum)) < 0){
-      minimum = i;
-    }
-  }
-  return minimum;
-}
-
-void delegate_work(int work[], int num_processes, int num_entries){
-  int remainder = num_entries % num_processes;
-  int multiple = num_entries - remainder;
-  for (int i = 0; i < num_processes; i++){
-    work[i] = multiple / num_processes;
-  }
-  int j = 0;
-  while (remainder > 0){
-    work[j] ++;
-    j++;
-    remainder = remainder - 1;
-  }
-}
-
-void Pipe(int * fd){
-  if ((pipe(fd))==-1){
-    perror("pipe");
+int Close(int file_des){
+  int result = close(file_des);
+  if (result == -1){
+    perror("close");
     exit(1);
   }
-}
-
-void fill_child_unsorted_array(int i, int * work, int num_records_inside_process,
-  struct rec * records, struct rec * unsorted_records){
-  int sum = 0;
-  for (int t = 0; t < i; t++){
-    sum += work[t];
-  }
-
-  for (int x = 0; x < num_records_inside_process; x++){
-    records[x] = unsorted_records[sum];
-    sum++;
-  }
+  return result;
 }
 
 int Fork(){
@@ -82,13 +49,102 @@ int Wait(int * exit_sig){
   return result;
 }
 
-void set_file_pt_position(FILE *fp, int position, int *work_array){
-  int sum = 0;
-  for (int i = 0; i < position; i++){
-    sum += work_array[i];
+int Fwrite(void * ptr, size_t size, size_t nitems,FILE * stream){
+  int test = fwrite(ptr, size, nitems, stream);
+  if (test < 0){
+    perror("fwrite");
+    exit(1);
+  } else if (test == 0){
+    printf("nothing was written by fwrite\n");
   }
-  fseek(fp, sum * sizeof(struct rec), SEEK_SET);
+  return test;
 }
+
+void Pipe(int * fd){
+  if ((pipe(fd))==-1){
+    perror("pipe");
+    exit(1);
+  }
+}
+
+void * Malloc(size_t size){
+  void * ptr = malloc(size);
+  if (ptr == NULL){
+    perror("malloc");
+    exit(1);
+  }
+  return ptr;
+}
+
+int Write(int fd, void * pointer, size_t size){
+  int t = write(fd, pointer, size);
+  if (t < 0){
+    perror("write");
+    exit(1);
+  }
+  return t;
+}
+
+int Read(int file_des, void *buffer, size_t count, struct rec * ifempty){
+  int result = read(file_des, buffer, count);
+  if (result == 0){
+    printf("zero things were read\n");
+    Write(file_des, ifempty, sizeof(struct rec));
+    printf("negative struct was written\n");
+  } else if (result < 0){
+    perror("read");
+    exit(1);
+  }
+  return result;
+ }
+
+int Fclose(FILE * fd){
+  int check = fclose(fd);
+  if (check != 0){
+    fprintf(stderr, "fclose failure\n");
+    exit(1);
+  }
+  return check;
+}
+
+// Helper functions for the program
+
+void delegate_work(int work[], int num_processes, int num_entries){
+  int remainder = num_entries % num_processes;
+  int multiple = num_entries - remainder;
+  for (int i = 0; i < num_processes; i++){
+    work[i] = multiple / num_processes;
+  }
+  int j = 0;
+  while (remainder > 0){
+    work[j] ++;
+    j++;
+    remainder = remainder - 1;
+  }
+}
+
+int get_bytes_to_skip(int iteration, int * work){
+  int sum = 0;
+  for (int i = 0; i < iteration; i++){
+    sum += work[i];
+  }
+  return (sum * sizeof(struct rec));
+}
+
+void get_minimum_struct(struct rec * rec_ptr, int * index_ptr, struct rec * buffer, int num_processes){
+  int minimum_index = 0;
+  struct rec minimum_struct = buffer[0];
+  for (int i = 0; i < num_processes; i++){
+    if ((buffer[i].freq <= minimum_struct.freq) && (buffer[i].freq != -1)){
+      minimum_index = i;
+      minimum_struct = buffer[i];
+    }
+  }
+  *index_ptr = minimum_index;
+  *rec_ptr = minimum_struct;
+}
+
+// the main code block
 
 int main(int argc, char* argv[]){
 
@@ -117,152 +173,88 @@ int main(int argc, char* argv[]){
       }
   }
 
-  // get file size using helper
+  // some variables
 
   int filesize = get_file_size(filename);
   int num_entries = filesize / sizeof(struct rec);
 
-  // decide how much work to delegate to each process
+  // generate pipes
 
-  int * work = malloc(sizeof(int) * num_processes); // how much work per child
-  struct rec * unsorted_records = malloc(filesize); // the array of unsorted records
-  struct rec * sorted_records = malloc(filesize); // array of the sorted records
+  int fd[num_processes-1][2];
 
-  printf("FREE THIS\n");
+  // have an array for deciding the work
+
+  int * work = malloc(sizeof(int) * num_processes);
   delegate_work(work, num_processes, num_entries);
 
-  // fill up the array of records in heap memory
+  // start calling Fork
 
-  FILE * fp = Fopen(filename, "rb");
-  FILE * out = Fopen(output, "wb");
-  struct rec temporary_record;
-  for (int j = 0; j < num_entries; j++){
-    fread(&temporary_record, sizeof(struct rec), 1, fp);
-    unsorted_records[j] = temporary_record;
-  }
-  printf("In this new design the child doesn't read, but takes in the unsorted records from\n");
-  // read(fd[i][0], &(temp[i]), sizeof(struct rec));
-  // printf("temp[i] contains %s with freq %d\n", temp[i].word, temp[i].freq);
-
-  // create the pipes that will be used for communication
-
-  int fd[num_processes-1][2]; // a pipe per child process
-  struct rec temp[num_processes-1];
-
-  // The master for loop begins
-
-  for (int i = 0; i < num_processes; i++){
-
-    // convert file descriptor subarray to pipe
-
-    Pipe(fd[i]);
-
-    // call fork to obtain a child process
-
-    int result;
-    if ((result = Fork()) == 0){
-
-      // read data
-
-      // set_file_pt_position(fp, i, work);
-      // printf("this function doesnt work^, use gdb\n");
-      struct rec * records = malloc(sizeof(struct rec) * work[i]);
-      int num_records_inside_process = work[i];
-
-      // store in array (malloc'd)
-
-      // for (int k = 0; k < num_records_inside_process; k++){
-      //   fread(records, sizeof(struct rec), 1, fp);
-      // }
-
-      fill_child_unsorted_array(i, work, num_records_inside_process, records, unsorted_records);
-
-      // printf("in child process now, printing contents: \n");
-      // for (int m = 0; m < num_records_inside_process; m++){
-      //   printf("the entry in child number %d is: %s\n", i, records[m].word);
-      // }
-
-      // call qsort on it
-
-      qsort(records, num_records_inside_process, sizeof(struct rec), compare_freq);
-
-      // printf("AFTER SORTING \n\n");
-      // for (int m = 0; m < num_records_inside_process; m++){
-      //   printf("the sorted entry in child number %d is: %s\n", i, records[m].word);
-      // }
-
-      // start feeding into the pipe
-
-      close(fd[i][0]); // close reading end
-      for (int a = 0; a < num_records_inside_process; a++){
-        write(fd[i][1], &(records[a]), sizeof(struct rec));
-        //printf("the entry is %s\n", records[a].word);
+  for (int a = 0; a < num_processes; a++){
+    Pipe(fd[a]);
+    int forkval = Fork();
+    if (forkval == 0){
+      // in child, open the file
+      int num_records_inside_process = work[a];
+      struct rec child_records[num_records_inside_process];
+      FILE * fp = Fopen(filename, "rb");
+      int bytes_to_skip = get_bytes_to_skip(a, work);
+      //read from the file and store that stuff in an array
+      fseek(fp, bytes_to_skip, SEEK_SET);
+      for (int b = 0; b < num_records_inside_process; b++){
+        fread(&(child_records[b]), sizeof(struct rec), 1, fp);
       }
-      close(fd[i][1]); // close writing end after writing is done
-      free(records);
+      //close the reading end of the pipe
+      Close(fd[a][0]);
+      // call qsort
+      qsort(child_records, num_records_inside_process, sizeof(struct rec), compare_freq);
+      // write to a pipe
+      for (int c = 0; c < num_records_inside_process; c++){
+        Write(fd[a][1], &(child_records[c]), sizeof(struct rec));
+      }
+      Close(fd[a][1]);
+      Fclose(fp);
+      // see if freeing work is required in here
+      // free(work);
       exit(0);
-
-
     } else {
-
-      // close unneeded writing ends
-
-      close(fd[i][1]); // closes the writing end
-
-      // run wait() as many times as the children
-
+      // in the parent, call wait, store the exit status into an int *
       int exit_sig;
       int result = Wait(&exit_sig);
 
-      printf("TODO: check exit sigs\n");
+      // close the writing end of the file
+      Close(fd[a][1]);
+    }
+  }
+  // outisde the main for loop
 
-      // reading it into the reading ends of the pipe
-
-      // read(fd[i][0], &(temp[i]), sizeof(struct rec));
-      //printf("temp[i] contains %s with freq %d\n", temp[i].word, temp[i].freq);
-      // read(fd[i][0], &(temp[i]), sizeof(struct rec));
-      // printf("temp[i] contains %s with freq %d\n", temp[i].word, temp[i].freq);
-      //printf("FIGURE OUT WHAT TO PRINT WHEN END OF PIPE IS REACHED FOR ONE PIPE AND NOT FOR THE OTHER\n");
-
-    }  // else block
-  } // for loop block
-
-  // merge the results together
-
-  for (int c = 0; c < num_processes; c++){
-    read(fd[c][0], &(temp[c]), sizeof(struct rec));
+  // 1. first for loop, till num_processes, that reads from pipes of parent into temporary array
+  struct rec records_finished;
+  records_finished.freq = -1;
+  strncpy(records_finished.word,"finished",44);
+  struct rec buffer[num_processes];
+  for (int d = 0; d < num_processes; d++){
+    Read(fd[d][0], &(buffer[d]), sizeof(struct rec), &records_finished);
   }
 
-  // take the minimum from temp and then dump it into the output file
+  // 2. in a for loop going to the num_entries, get minimum from temp array, and dump it into a file
+  struct rec minimum_rec;
+  int minimum_index;
+  FILE * fp_out = Fopen(output, "wb");
 
-  // printf("code block directly below doesn't work\n");
-  for (int h = 0; h < num_entries; h++){
-    int minimum = get_minimum_struct_index(temp, num_processes);
-    // printf("figure out how to use dup2 here to write the struct to the file\n");
-    // printf("code doesn't work because fwrite is called instead of write\n");
-
-
-    // dup2(fd[h][0], STDOUT_FILENO);
-    // write(fd[h][0], out, sizeof(struct rec));
-
-
-    fwrite(&(temp[minimum]), sizeof(struct rec), 1, out);
-    printf("the entry is %s and the freq is  %d\n", temp[minimum].word, temp[minimum].freq);
-
+  for (int e = 0; e < num_entries; e++){
+    get_minimum_struct(&minimum_rec, &minimum_index, buffer, num_processes);
+    printf("THE NEWLY CHOSEN MINIMUM WAS %s WITH FREQ %d\n", minimum_rec.word, minimum_rec.freq);
+    Fwrite(&minimum_rec, sizeof(struct rec), 1, fp_out);
+    Read(fd[minimum_index][0], &(buffer[minimum_index]), sizeof(struct rec), &records_finished);
   }
 
-  // close the reading ends of the fd
-
-  for (int k = 0; k < num_processes; k++){
-    close(fd[k][0]); //closing reading ends after the program is done.
+  // 3. a for loop, going to num_processes, closing out all the file descriptors for the parent
+  for (int f = 0; f < num_processes; f ++){
+    Close(fd[f][0]);
   }
 
-  // free all malloc'd space
-
+  // 4. close up anything thats left, and free up all the malloc'd memory
+  Fclose(fp_out);
   free(work);
-  free(sorted_records);
-  free(unsorted_records);
-  fclose(fp);
-  fclose(out);
   return 0;
-} // end of main
+}
