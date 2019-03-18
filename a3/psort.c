@@ -87,13 +87,7 @@ int Write(int fd, void * pointer, size_t size){
 
 int Read(int file_des, void *buffer, size_t count, struct rec * ifempty){
   int result = read(file_des, buffer, count);
-  if (result == 0){
-    printf("zero things were read\n");
-    // Close(file_des);
-    // buffer = ifempty;
-    // //Write(file_des, ifempty, sizeof(struct rec));
-    printf("negative struct was written\n");
-  } else if (result < 0){
+  if (result < 0){
     perror("read");
     exit(1);
   }
@@ -253,12 +247,9 @@ int main(int argc, char* argv[]){
 
   for (int e = 0; e < num_entries; e++){
     get_minimum_struct(&minimum_rec, &minimum_index, buffer, min_entity);
-    printf("THE NEWLY CHOSEN MINIMUM WAS %s WITH FREQ %d\n", minimum_rec.word, minimum_rec.freq);
     Fwrite(&minimum_rec, sizeof(struct rec), 1, fp_out);
     if (read(fd[minimum_index][0], &(buffer[minimum_index]), sizeof(struct rec)) == 0){
-      printf("about to close\n");
       Close(fd[minimum_index][0]);
-      printf("\nclosed\n");
       buffer[minimum_index] = records_finished;
     }
   }
