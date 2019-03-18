@@ -3,8 +3,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "helper.h"
-// THIS WILL BE THE NEW VERSION
 
 // checker and wrapper functions
 
@@ -219,7 +220,7 @@ int main(int argc, char* argv[]){
       Close(fd[a][1]);
       Fclose(fp);
       // see if freeing work is required in here
-      // free(work);
+      free(work);
       exit(0);
     } else {
       // in the parent, call wait, store the exit status into an int *
@@ -254,13 +255,7 @@ int main(int argc, char* argv[]){
     }
   }
 
-  // 3. a for loop, going to num_processes, closing out all the file descriptors for the parent
-  // for (int f = 0; f < num_processes; f ++){
-  //   Close(fd[f][1]);
-  //   printf("filedes close for parent\n");
-  // }
-
-  // 4. close up anything thats left, and free up all the malloc'd memory
+  // 3. close up anything thats left, and free up all the malloc'd memory
   Fclose(fp_out);
   free(work);
   return 0;
