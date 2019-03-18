@@ -89,7 +89,9 @@ int Read(int file_des, void *buffer, size_t count, struct rec * ifempty){
   int result = read(file_des, buffer, count);
   if (result == 0){
     printf("zero things were read\n");
-    Write(file_des, ifempty, sizeof(struct rec));
+    // Close(file_des);
+    // buffer = ifempty;
+    // //Write(file_des, ifempty, sizeof(struct rec));
     printf("negative struct was written\n");
   } else if (result < 0){
     perror("read");
@@ -133,7 +135,8 @@ int get_bytes_to_skip(int iteration, int * work){
 
 void get_minimum_struct(struct rec * rec_ptr, int * index_ptr, struct rec * buffer, int num_processes){
   int minimum_index = 0;
-  struct rec minimum_struct = buffer[0];
+  struct rec minimum_struct;
+  minimum_struct.freq =  2147483647;
   for (int i = 0; i < num_processes; i++){
     if ((buffer[i].freq <= minimum_struct.freq) && (buffer[i].freq != -1)){
       minimum_index = i;
@@ -147,8 +150,6 @@ void get_minimum_struct(struct rec * rec_ptr, int * index_ptr, struct rec * buff
 // the main code block
 
 int main(int argc, char* argv[]){
-
-  printf("CHECK MALLOC YOU FUCK \n");
   //check input
   if (argc != 7){
     check_usage();
@@ -161,6 +162,10 @@ int main(int argc, char* argv[]){
     switch(opt){
       case 'n':
         num_processes = strtol(optarg, NULL, 10);
+        if (num_processes < 1){
+          printf("Invalid argument: number of processes must be greater than 0\n");
+          exit(1);
+        }
         break;
       case 'f':
         filename = optarg;
@@ -179,17 +184,23 @@ int main(int argc, char* argv[]){
   int num_entries = filesize / sizeof(struct rec);
 
   // generate pipes
+  int min_entity = 0;
+  if (num_processes <= num_entries){
+    min_entity = num_processes;
+  } else {
+    min_entity = num_entries;
+  }
+  int fd[min_entity-1][2];
 
-  int fd[num_processes-1][2];
 
   // have an array for deciding the work
 
-  int * work = malloc(sizeof(int) * num_processes);
-  delegate_work(work, num_processes, num_entries);
+  int * work = malloc(sizeof(int) * min_entity);
+  delegate_work(work, min_entity, num_entries);
 
   // start calling Fork
 
-  for (int a = 0; a < num_processes; a++){
+  for (int a = 0; a < min_entity; a++){
     Pipe(fd[a]);
     int forkval = Fork();
     if (forkval == 0){
@@ -218,8 +229,7 @@ int main(int argc, char* argv[]){
       exit(0);
     } else {
       // in the parent, call wait, store the exit status into an int *
-      int exit_sig;
-      int result = Wait(&exit_sig);
+      Wait(NULL);
 
       // close the writing end of the file
       Close(fd[a][1]);
@@ -231,8 +241,8 @@ int main(int argc, char* argv[]){
   struct rec records_finished;
   records_finished.freq = -1;
   strncpy(records_finished.word,"finished",44);
-  struct rec buffer[num_processes];
-  for (int d = 0; d < num_processes; d++){
+  struct rec buffer[min_entity];
+  for (int d = 0; d < min_entity; d++){
     Read(fd[d][0], &(buffer[d]), sizeof(struct rec), &records_finished);
   }
 
@@ -242,16 +252,22 @@ int main(int argc, char* argv[]){
   FILE * fp_out = Fopen(output, "wb");
 
   for (int e = 0; e < num_entries; e++){
-    get_minimum_struct(&minimum_rec, &minimum_index, buffer, num_processes);
+    get_minimum_struct(&minimum_rec, &minimum_index, buffer, min_entity);
     printf("THE NEWLY CHOSEN MINIMUM WAS %s WITH FREQ %d\n", minimum_rec.word, minimum_rec.freq);
     Fwrite(&minimum_rec, sizeof(struct rec), 1, fp_out);
-    Read(fd[minimum_index][0], &(buffer[minimum_index]), sizeof(struct rec), &records_finished);
+    if (read(fd[minimum_index][0], &(buffer[minimum_index]), sizeof(struct rec)) == 0){
+      printf("about to close\n");
+      Close(fd[minimum_index][0]);
+      printf("\nclosed\n");
+      buffer[minimum_index] = records_finished;
+    }
   }
 
   // 3. a for loop, going to num_processes, closing out all the file descriptors for the parent
-  for (int f = 0; f < num_processes; f ++){
-    Close(fd[f][0]);
-  }
+  // for (int f = 0; f < num_processes; f ++){
+  //   Close(fd[f][1]);
+  //   printf("filedes close for parent\n");
+  // }
 
   // 4. close up anything thats left, and free up all the malloc'd memory
   Fclose(fp_out);
