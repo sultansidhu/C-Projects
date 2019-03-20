@@ -123,10 +123,9 @@ int main(int argc, char* argv[]){
     for (int t = 0; t < min_entity; t++){
         // in the parent, call wait, store the exit status into an int *
         int exit_sig;
-        int exit_stat;
         Wait(&exit_sig);
         if (WIFEXITED(exit_sig)){
-            exit_stat = WEXITSTATUS(exit_sig);
+            WEXITSTATUS(exit_sig);
             if (exit_sig != 0){
                 fprintf(stderr, "Child terminated abnormally\n");
             }
