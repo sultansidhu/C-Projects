@@ -1,0 +1,208 @@
+Script started on Fri 22 Mar 2019 04:09:58 PM EDT
+]0;sidhusul@b2270-06:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab10b2270-06:~/Desktop/CSC209/sidhusul/lab10$ # this is the server file
+]0;sidhusul@b2270-06:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab10b2270-06:~/Desktop/CSC209/sidhusul/lab10$ break[K[K[K[K[Kgdb bufserver
+GNU gdb (Ubuntu 7.11.1-0ubuntu1~16.5) 7.11.1
+Copyright (C) 2016 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu".
+Type "show configuration" for configuration details.
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Find the GDB manual and other documentation resources online at:
+<http://www.gnu.org/software/gdb/documentation/>.
+For help, type "help".
+Type "apropos word" to search for commands related to "word"...
+Reading symbols from bufserver...done.
+(gdb) break set_up_socket_server
+Function "set_up_socket_server" not defined.
+Make breakpoint pending on future shared library load? (y or [n]) j[Kn
+(gdb) ber[K[K[Kbreak set_up_server_socket
+Breakpoint 1 at 0x400e74: file socket.c, line 35.
+(gdb) n
+The program is not being run.
+(gdb) n
+The program is not being run.
+(gdb) run
+Starting program: /h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab10/bufserver 
+
+Breakpoint 1, set_up_server_socket (self=0x603010, num_queue=5) at socket.c:35
+35	int set_up_server_socket(struct sockaddr_in *self, int num_queue) {
+(gdb) n
+36	    int soc = socket(PF_INET, SOCK_STREAM, 0);
+(gdb) n
+37	    if (soc < 0) {
+(gdb) n
+44	    int on = 1;
+(gdb) n
+45	    int status = setsockopt(soc, SOL_SOCKET, SO_REUSEADDR,
+(gdb) n
+47	    if (status < 0) {
+(gdb) n
+53	    if (bind(soc, (struct sockaddr *)self, sizeof(*self)) < 0) {
+(gdb) n
+60	    if (listen(soc, num_queue) < 0) {
+(gdb) n
+66	    return soc;
+(gdb) n
+67	}
+(gdb) n
+main () at bufserver.c:27
+27	        int fd = accept_connection(listenfd);
+(gdb) n
+Waiting for a new connection...
+New connection accepted from 127.0.0.1:43810
+28	        if (fd < 0) {
+(gdb) n
+33	        char buf[BUFSIZE] = {'\0'};
+(gdb) n
+34	        int inbuf = 0;           // How many bytes currently in buffer?
+(gdb) n
+35	        int room = sizeof(buf);  // How many bytes remaining in buffer?
+(gdb) n
+36	        char *after = buf;       // Pointer to position after the data in buf
+(gdb) n
+39	        while ((nbytes = read(fd, after, room)) > 0) {
+(gdb) n
+41	            inbuf += nbytes;
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+59	                buf[where-2] = '\0';
+(gdb) n
+62	                printf("Next message: %s\n", buf);
+(gdb) n
+Next message: A stitch in time
+68	                inbuf -= where;
+(gdb) n
+73	                memmove(buf, &(buf[where]), inbuf);
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+78	            after = &(buf[inbuf]);
+(gdb) n
+79	            room = BUFSIZE - inbuf;
+(gdb) n
+39	        while ((nbytes = read(fd, after, room)) > 0) {
+(gdb) n
+41	            inbuf += nbytes;
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+59	                buf[where-2] = '\0';
+(gdb) n
+62	                printf("Next message: %s\n", buf);
+(gdb) n
+Next message: A stitch in time
+68	                inbuf -= where;
+(gdb) n
+73	                memmove(buf, &(buf[where]), inbuf);
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+78	            after = &(buf[inbuf]);
+(gdb) n
+79	            room = BUFSIZE - inbuf;
+(gdb) n
+39	        while ((nbytes = read(fd, after, room)) > 0) {
+(gdb) n
+41	            inbuf += nbytes;
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+59	                buf[where-2] = '\0';
+(gdb) n
+62	                printf("Next message: %s\n", buf);
+(gdb) n
+Next message: A stitch in time
+68	                inbuf -= where;
+(gdb) n
+73	                memmove(buf, &(buf[where]), inbuf);
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+78	            after = &(buf[inbuf]);
+(gdb) n
+79	            room = BUFSIZE - inbuf;
+(gdb) n
+39	        while ((nbytes = read(fd, after, room)) > 0) {
+(gdb) n
+41	            inbuf += nbytes;
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+59	                buf[where-2] = '\0';
+(gdb) n
+62	                printf("Next message: %s\n", buf);
+(gdb) n
+Next message: A stitch in time
+68	                inbuf -= where;
+(gdb) n
+73	                memmove(buf, &(buf[where]), inbuf);
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+78	            after = &(buf[inbuf]);
+(gdb) n
+79	            room = BUFSIZE - inbuf;
+(gdb) n
+39	        while ((nbytes = read(fd, after, room)) > 0) {
+(gdb) n
+41	            inbuf += nbytes;
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+59	                buf[where-2] = '\0';
+(gdb) n
+62	                printf("Next message: %s\n", buf);
+(gdb) n
+Next message: A stitch in time
+68	                inbuf -= where;
+(gdb) n
+73	                memmove(buf, &(buf[where]), inbuf);
+(gdb) n
+53	            while ((where = find_network_newline(buf, inbuf)) > 0) {
+(gdb) n
+78	            after = &(buf[inbuf]);
+(gdb) n
+79	            room = BUFSIZE - inbuf;
+(gdb) n
+39	        while ((nbytes = read(fd, after, room)) > 0) {
+(gdb) n
+83	        close(fd);
+(gdb) n
+27	        int fd = accept_connection(listenfd);
+(gdb) n
+Waiting for a new connection...
+New connection accepted from 127.0.0.1:43812
+28	        if (fd < 0) {
+(gdb) n
+33	        char buf[BUFSIZE] = {'\0'};
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 63074] will be killed.
+
+Quit anyway? (y or n) n
+Not confirmed.
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 63074] will be killed.
+
+Quit anyway? (y or n) bn[K[Kn
+Not confirmed.
+(gdb) n
+34	        int inbuf = 0;           // How many bytes currently in buffer?
+(gdb) quit
+A debugging session is active.
+
+	Inferior 1 [process 63074] will be killed.
+
+Quit anyway? (y or n) y
+]0;sidhusul@b2270-06:/h/u15/c7/00/sidhusul/Desktop/CSC209/sidhusul/lab10b2270-06:~/Desktop/CSC209/sidhusul/lab10$ exit
+exit
+
+Script done on Fri 22 Mar 2019 04:17:18 PM EDT
