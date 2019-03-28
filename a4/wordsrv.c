@@ -16,7 +16,7 @@
 
 
 #ifndef PORT
-    #define PORT y
+    #define PORT 59996
 #endif
 #define MAX_QUEUE 5
 
@@ -42,6 +42,42 @@ void advance_turn(struct game_state *game);
  */
 fd_set allset;
 
+
+// HELPER FUNCTIONS
+
+/* This function reads for input from the the client side of the socket. 
+ * Executed inside a while loop so as to make sure that all the output is
+ * captured.
+ */
+
+void read_from_socket(int filedes, char * name_space){
+    char * p = NULL;
+    int num_chars = 0;
+    while (p == NULL){
+        num_chars += read(filedes, &name_space[num_chars], MAX_BUF - num_chars - 1);
+        name_space[num_chars] = '\0';
+        p = strstr(name_space, "\r\n");
+    }
+    *p = '\0';
+}
+
+/* This function searches the struct client * head linked list for any names 
+ * that are the same as specified by the user_name given by the user.
+ */
+int name_not_found(struct client* game_head, char * user_name){
+    struct client * current = game_head;
+    int indicator = 0;
+    while (current != NULL){
+        if (strcmp(current->name, user_name) == 0){
+            printf("the name you entered has already been taken!\n");
+            indicator = 1;
+        }
+        current = current->next;
+    }
+    return indicator;
+}
+
+// WRAPPER FUNCTIONS
 
 /* Add a client to the head of the linked list
  */
@@ -89,6 +125,7 @@ void remove_player(struct client **top, int fd) {
 
 
 int main(int argc, char **argv) {
+    printf("remember to make wrapper functions\n");
     int clientfd, maxfd, nready;
     struct client *p;
     struct sockaddr_in q;
@@ -175,6 +212,7 @@ int main(int argc, char **argv) {
                 for(p = game.head; p != NULL; p = p->next) {
                     if(cur_fd == p->fd) {
                         //TODO - handle input from an active client
+
                         
                         
                         
@@ -187,6 +225,22 @@ int main(int argc, char **argv) {
                     if(cur_fd == p->fd) {
                         // TODO - handle input from an new client who has
                         // not entered an acceptable name.
+                        char * name = malloc(MAX_BUF);
+                        printf("free this malloc'd space\n");
+                        read_from_socket(cur_fd, name);
+                        printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
+                        while((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name))){
+                            char *greeting = WELCOME_MSG;
+                            if(write(clientfd, greeting, strlen(greeting)) == -1) {
+                                fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
+                                remove_player(&(game.head), p->fd);
+                            };
+                            read_from_socket(cur_fd, name);
+                            printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
+                        }
+                        add_player(&(game.head), cur_fd, q.sin_addr); // add this boy to game.head 
+                        strncpy(game.head->name, name, 30);
+                        printf("the name that was just added to the linked list was: %s\n", game.head->name);
                         break;
                     } 
                 }
