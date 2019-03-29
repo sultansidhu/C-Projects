@@ -9,7 +9,7 @@
 
 
 #ifndef PORT
-  #define PORT 30000
+  #define PORT 59997
 #endif
 #define MAX_BACKLOG 5
 #define MAX_CONNECTIONS 12
@@ -57,12 +57,18 @@ int accept_connection(int fd, struct sockname *usernames) {
 int read_from(int client_index, struct sockname *usernames) {
     int fd = usernames[client_index].sock_fd;
     char buf[BUF_SIZE + 1];
-
+    char msg[BUF_SIZE];
     int num_read = read(fd, &buf, BUF_SIZE);
     buf[num_read] = '\0';
-    if (num_read == 0 || write(fd, buf, strlen(buf)) != strlen(buf)) {
-        usernames[client_index].sock_fd = -1;
-        return fd;
+    sprintf(msg, "%s : %s", usernames[client_index].username, buf);
+    if (num_read == 0 || write(fd, msg, strlen(msg)) != strlen(buf)) {
+            usernames[client_index].sock_fd = -1;
+            return fd;
+    }
+    for (int i = 0; i < MAX_CONNECTIONS; i++){
+        if (usernames[i].sock_fd != fd){
+            write(usernames[i].sock_fd, buf, strlen(buf));
+        }
     }
 
     return 0;
@@ -130,8 +136,17 @@ int main(void) {
                 max_fd = client_fd;
             }
             FD_SET(client_fd, &all_fds);
+            char username[BUF_SIZE];
+            read(client_fd, username, BUF_SIZE);
+            for (int j = 0; j < MAX_CONNECTIONS; j++){
+                if (usernames[j].sock_fd == client_fd){
+                    usernames[j].username = strdup(username);
+                }
+            }
             printf("Accepted connection\n");
         }
+
+        
 
         // Next, check the clients.
         // NOTE: We could do some tricks with nready to terminate this loop early.
@@ -140,10 +155,11 @@ int main(void) {
                 // Note: never reduces max_fd
                 int client_closed = read_from(index, usernames);
                 if (client_closed > 0) {
+                    free(usernames[index].username);
                     FD_CLR(client_closed, &all_fds);
                     printf("Client %d disconnected\n", client_closed);
                 } else {
-                    printf("Echoing message from client %d\n", usernames[index].sock_fd);
+                    printf("Echoing message from client %s %d\n", usernames[index].username, usernames[index].sock_fd);
                 }
             }
         }
