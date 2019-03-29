@@ -16,7 +16,7 @@
 
 
 #ifndef PORT
-    #define PORT 59996
+    #define PORT 59994
 #endif
 #define MAX_QUEUE 5
 
@@ -45,6 +45,45 @@ fd_set allset;
 
 // HELPER FUNCTIONS
 
+void len_ll(struct client * list){
+    struct client * a = list;
+    int counter = 0;
+    while (a != NULL){
+        counter++;
+        a = a->next;
+    }
+    printf("THE LENGTH OF THIS LINKED LIST IS %d\n", counter);
+}
+
+/**
+ * This function prints contents of a linked list, used for debugging.
+ */
+void print_ll(struct game_state game){
+    struct client * head = game.head;
+    printf("\n\n NOW PRINTING CONTENTS OF LINKED LIST GAME.HEAD\n\n");
+    while (head != NULL){
+        printf("the name: %s\n", head->name);
+        printf("file descriptor: %d\n", head->fd);
+        head = head->next;
+    }
+}
+
+/**
+ * This function removes a player that has entered a valid name, and adds it
+ * onto the linked list of active players.
+ */
+void remove_valid_player(struct client ** list, int fd){
+    struct client * next;
+    if (*list != NULL){
+        next = (*list)->next;
+        printf("Removing player from latent player list %d\n", fd);
+        *list = next;
+    } else {
+        fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n",fd);
+    }
+}
+
+
 /* This function reads for input from the the client side of the socket. 
  * Executed inside a while loop so as to make sure that all the output is
  * captured.
@@ -52,19 +91,16 @@ fd_set allset;
 
 void read_from_socket(int filedes, char * name_space){
     char * p = NULL;
-    int num_chars = 0;
-    while (p == NULL){
-        num_chars += read(filedes, &name_space[num_chars], MAX_BUF - num_chars - 1);
-        name_space[num_chars] = '\0';
-        p = strstr(name_space, "\r\n");
-    }
+    int num_chars = read(filedes, name_space, MAX_BUF);
+    name_space[num_chars] = '\0';
+    p = strstr(name_space, "\r\n");
     *p = '\0';
 }
 
 /* This function searches the struct client * head linked list for any names 
  * that are the same as specified by the user_name given by the user.
  */
-int name_not_found(struct client* game_head, char * user_name){
+int name_not_found(struct client * game_head, char * user_name){
     struct client * current = game_head;
     int indicator = 0;
     while (current != NULL){
@@ -75,6 +111,21 @@ int name_not_found(struct client* game_head, char * user_name){
         current = current->next;
     }
     return indicator;
+}
+
+/* This function goes through the entire linked list of active players and alerts
+ * the players of who's turn it is to choose a letter.
+ */
+void broadcast_turn(struct game_state * game_pt, struct client * client){
+    char * part1 = "It is currently ";
+    char * part2 = "'s turn to play!\r\n";
+    char buffer[MAX_BUF];
+    strncat(buffer, part1, strlen(part1));
+    strncat(buffer, client->name, strlen(client->name));
+    strncat(buffer, part2, strlen(part2));
+    for (struct client * current = game_pt -> head; current != NULL; current = current->next){
+        write(current->fd, buffer, strlen(part1) + strlen(part2) + strlen(client->name)+3);
+    }
 }
 
 // WRAPPER FUNCTIONS
@@ -205,42 +256,64 @@ int main(int argc, char **argv) {
          * valid.
          */
         int cur_fd;
+        // for (int fd_cur = 0; fd_cur <= maxfd; fd_cur++ ){
+        //     printf("\n\n the fd value is %d\n\n", fd_cur);
+        // }
         for(cur_fd = 0; cur_fd <= maxfd; cur_fd++) {
             if(FD_ISSET(cur_fd, &rset)) {
                 // Check if this socket descriptor is an active player
-                
+                //write(cur_fd, "What would your choice be?", 26);
                 for(p = game.head; p != NULL; p = p->next) {
+                    //printf("\n\nwe are in the current players list right now\n\n");
+                    //print_ll(game);
+                    //write(cur_fd, "It comes into the for loop?", 26);
                     if(cur_fd == p->fd) {
-                        //TODO - handle input from an active client
+                        char answer[2];
+                        answer[1] = '\0';
 
-                        
-                        
-                        
+
+                        // do{
+                        //     write(cur_fd, "What would your guess be?\n\r\n", 24);
+                        //     read(cur_fd, answer, 3);
+                        // } while (strlen(answer) != 3);
+
+                        write(cur_fd, "What would your guess be?\n\r\n", 24);
+                        read(cur_fd, answer, 3);
+                        //printf("\n\nCUR FD IS THE FOLLOWING: %d\n\n", cur_fd);
+                        //TODO - handle input from an active client
+                        //printf("reaches here\n");     
+
+                                           
                         break;
                     }
                 }
         
                 // Check if any new players are entering their names
                 for(p = new_players; p != NULL; p = p->next) {
+                    printf("\n\n we are in the new players list right now\n\n");
                     if(cur_fd == p->fd) {
                         // TODO - handle input from an new client who has
                         // not entered an acceptable name.
                         char * name = malloc(MAX_BUF);
                         printf("free this malloc'd space\n");
                         read_from_socket(cur_fd, name);
-                        printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
-                        while((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name))){
+
+                        //printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
+                        while((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name) == 1)){
                             char *greeting = WELCOME_MSG;
                             if(write(clientfd, greeting, strlen(greeting)) == -1) {
                                 fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
                                 remove_player(&(game.head), p->fd);
                             };
                             read_from_socket(cur_fd, name);
-                            printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
+                            //printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
                         }
-                        add_player(&(game.head), cur_fd, q.sin_addr); // add this boy to game.head 
+                        add_player(&(game.head), cur_fd, p->ipaddr); // add this boy to game.head 
                         strncpy(game.head->name, name, 30);
-                        printf("the name that was just added to the linked list was: %s\n", game.head->name);
+                        //printf("the name that was just added to the linked list was: %s\n", game.head->name);
+                        // remove player from new_players
+                        remove_valid_player(&(new_players), p->fd);
+                        print_ll(game);
                         break;
                     } 
                 }
@@ -249,5 +322,3 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
-
-
