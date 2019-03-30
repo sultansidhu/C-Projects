@@ -60,6 +60,30 @@ void print_read_status(int check){
     }
 }
 
+/**
+ * This function adds a player that entered a valid name to 
+ * the list of active players in the game struct.
+ */
+void add_player_to_game(struct game_state * game, int fd, struct in_addr addr, char * name){
+    struct client *p = malloc(sizeof(struct client));
+
+    if (!p) {
+        perror("malloc");
+        exit(1);
+    }
+
+    //printf("Adding client %s\n", inet_ntoa(addr));
+
+    p->fd = fd;
+    p->ipaddr = addr;
+    p->name[0] = '\0';
+    strncpy(p->name, name, MAX_NAME);
+    p->in_ptr = p->inbuf;
+    p->inbuf[0] = '\0';
+    p->next = game->head;
+    game->head = p;
+}
+
 /*
  * Search the first n characters of buf for a network newline (\r\n).
  * Return one plus the index of the '\n' of the first network newline,
@@ -95,7 +119,7 @@ void broadcast(struct game_state *game, char *outbuf){
  * and broadcasts it to every active player.
  */
 void announce_turn(struct game_state *game){
-    char turn[MAX_BUF];
+    char turn[MAX_BUF] = {'\0'};
     sprintf(turn, "The next turn is of %s\r\n", game->has_next_turn->name);
     broadcast(game, turn);
 }
@@ -356,7 +380,7 @@ int main(int argc, char **argv) {
                     //print_ll(game);
                     //write(cur_fd, "It comes into the for loop?", 26);
                     if(cur_fd == p->fd) {
-                        char buffer[MAX_BUF];
+                        char buffer[MAX_BUF] = {'\0'};
                         sprintf(buffer, "It is currently %s's turn!\n", game.has_next_turn->name);
                         broadcast_audience(&game, buffer); // tell everyone else who's turn it is right now.
                         char choice[3];
@@ -479,16 +503,15 @@ int main(int argc, char **argv) {
                             read_from_socket(cur_fd, name);
                             //printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
                         }
-                        add_player(&(game.head), cur_fd, p->ipaddr); // add this boy to game.head 
-                        strncpy(game.head->name, name, MAX_NAME);
-                        //printf("the name that was just added to the linked list was: %s\n", game.head->name);
-                        // remove player from new_players
+                        printf("GAME HEAD NAME IS %s", game.head->name);
+                        add_player_to_game(&game, cur_fd, p->ipaddr, name);
+                        printf("GAME HEAD NAME IS %s", game.head->name);
                         remove_valid_player(&(new_players), p->fd);
                         char entry_msg[MAX_BUF] = {'\0'};
                         sprintf(entry_msg, "%s has just joined the game!\r\n", game.head->name);
                         broadcast(&game, entry_msg);
                         set_initial_player(&game);
-                        char status[MAX_BUF];
+                        char status[MAX_BUF] = {'\0'};
                         write(cur_fd, status_message(status, &game), MAX_BUF);
                         //print_ll(game);
                         break;
