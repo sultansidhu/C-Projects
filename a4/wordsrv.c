@@ -45,6 +45,95 @@ fd_set allset;
 
 // HELPER FUNCTIONS
 
+/**
+ * This function prints the number of bytes read onto the
+ * screen.
+ */
+void print_read_status(int check){
+    if (check < 0){
+        perror("read");
+        exit(1);
+    } else if (check == 0){
+        printf("Read 0 things lol\n");
+    } else {
+        printf("Read %d things, more than 0!\n", check);
+    }
+}
+
+/*
+ * Search the first n characters of buf for a network newline (\r\n).
+ * Return one plus the index of the '\n' of the first network newline,
+ * or -1 if no network newline is found.
+ * Definitely do not use strchr or other string functions to search here. (Why not?)
+ */
+int find_network_newline(const char *buf, int n) {
+    char minibuffer[2];
+    for (int i = 0; i < n-1; i++){
+        minibuffer[0] = buf[i];
+        minibuffer[1] = buf[i+1];
+        if (strcmp(minibuffer, "\r\n")==0){
+              return i+2;
+        }
+    }
+    return -1;
+}
+
+/**
+ * This function broadcasts a message to all the currently
+ * active players in the game.
+ */
+void broadcast(struct game_state *game, char *outbuf){
+    struct client * top = game->head;
+    while(top != NULL){
+        write(top->fd, outbuf, MAX_BUF);
+        top = top->next;
+    }
+}
+
+/**
+ * This function announces the turn of the next player,
+ * and broadcasts it to every active player.
+ */
+void announce_turn(struct game_state *game){
+    char turn[MAX_BUF];
+    sprintf(turn, "The next turn is of %s\r\n", game->has_next_turn->name);
+    broadcast(game, turn);
+}
+
+/**
+ * This function advances turn within the linked list
+ */
+void advance_turn(struct game_state *game){
+    struct client * current = game->head;
+    struct client * previous = NULL;
+    if(game->has_next_turn->fd == game->head->fd){
+        while(current!=NULL){
+            previous = current;
+            current = current->next;
+        }
+    } else {
+        while ((current != NULL)&&(current->fd != game->has_next_turn->fd)){
+        previous = current;
+        current = current->next;
+        }
+    }
+    game -> has_next_turn = previous;
+}
+
+/**
+ * This function broadcasts a message to everyone but the
+ * player with the current turn.
+ */
+void broadcast_audience(struct game_state * game, char * outbuf){
+    struct client * top = game->head;
+    while(top != NULL){
+        if(game->has_next_turn->fd != top->fd){
+          write(top->fd, outbuf, MAX_BUF);
+        }
+        top = top->next;  
+    }
+}
+
 void len_ll(struct client * list){
     struct client * a = list;
     int counter = 0;
@@ -53,6 +142,23 @@ void len_ll(struct client * list){
         a = a->next;
     }
     printf("THE LENGTH OF THIS LINKED LIST IS %d\n", counter);
+}
+
+/**
+ * This function will set the first turn, when the player is added 
+ * to the active players list initially
+ */
+void set_initial_player(struct game_state * game){
+    if(game->has_next_turn == NULL){
+        struct client * current = game->head;
+        while (current->next != NULL){
+            current = current->next;
+        }
+        game->has_next_turn = current;
+    } else {
+        return;
+        //TODO: LOOK IF THIS THING CHANGES WITHIN THE SCOPE OF THE FUNCTION ONLY OR NOT
+    }
 }
 
 /**
@@ -111,21 +217,6 @@ int name_not_found(struct client * game_head, char * user_name){
         current = current->next;
     }
     return indicator;
-}
-
-/* This function goes through the entire linked list of active players and alerts
- * the players of who's turn it is to choose a letter.
- */
-void broadcast_turn(struct game_state * game_pt, struct client * client){
-    char * part1 = "It is currently ";
-    char * part2 = "'s turn to play!\r\n";
-    char buffer[MAX_BUF];
-    strncat(buffer, part1, strlen(part1));
-    strncat(buffer, client->name, strlen(client->name));
-    strncat(buffer, part2, strlen(part2));
-    for (struct client * current = game_pt -> head; current != NULL; current = current->next){
-        write(current->fd, buffer, strlen(part1) + strlen(part2) + strlen(client->name)+3);
-    }
 }
 
 // WRAPPER FUNCTIONS
@@ -256,9 +347,6 @@ int main(int argc, char **argv) {
          * valid.
          */
         int cur_fd;
-        // for (int fd_cur = 0; fd_cur <= maxfd; fd_cur++ ){
-        //     printf("\n\n the fd value is %d\n\n", fd_cur);
-        // }
         for(cur_fd = 0; cur_fd <= maxfd; cur_fd++) {
             if(FD_ISSET(cur_fd, &rset)) {
                 // Check if this socket descriptor is an active player
@@ -268,20 +356,102 @@ int main(int argc, char **argv) {
                     //print_ll(game);
                     //write(cur_fd, "It comes into the for loop?", 26);
                     if(cur_fd == p->fd) {
-                        char answer[2];
-                        answer[1] = '\0';
+                        char buffer[MAX_BUF];
+                        sprintf(buffer, "It is currently %s's turn!\n", game.has_next_turn->name);
+                        broadcast_audience(&game, buffer); // tell everyone else who's turn it is right now.
+                        char choice[3];
+                        if (cur_fd == game.has_next_turn->fd){
+                            write(cur_fd, "Your guess? \r\n", 12);
+                        } else {
+                            write(cur_fd, "ITS NOT YOUR TURN LOL SO YOUR GUESS DIDNT PRINT!\r\n",50); 
+                        }
 
 
-                        // do{
-                        //     write(cur_fd, "What would your guess be?\n\r\n", 24);
-                        //     read(cur_fd, answer, 3);
-                        // } while (strlen(answer) != 3);
 
-                        write(cur_fd, "What would your guess be?\n\r\n", 24);
-                        read(cur_fd, answer, 3);
-                        //printf("\n\nCUR FD IS THE FOLLOWING: %d\n\n", cur_fd);
+                        // THE WHILE LOOP FROM THE LAB 10 IS HERE
+
+                        int inbuf = 0;
+                        char buf[MAX_BUF] = {'\0'};
+                        int room = sizeof(buf);
+                        char * after = buf;
+                        int nbytes;
+
+                        while ((nbytes = read(cur_fd, after, room)) > 0) {
+                            // Step 1: update inbuf (how many bytes were just added?)
+                            inbuf += nbytes;
+                            printf("NBYTES IS: %d\n", nbytes);
+
+                            int where;
+
+                            // Step 2: the loop condition below calls find_network_newline
+                            // to determine if a full line has been read from the client.
+                            // Your next task should be to implement find_network_newline
+                            // (found at the bottom of this file).
+                            //
+                            // Note: we use a loop here because a single read might result in
+                            // more than one full line.
+                            while ((where = find_network_newline(buf, inbuf)) > 0) {
+                                printf("WHERE IS: %d\n", where);
+                                // Step 3: Okay, we have a full line.
+                                // Output the full line, not including the "\r\n",
+                                // using print statement below.
+                                // Be sure to put a '\0' in the correct place first;
+                                // otherwise you'll get junk in the output.
+                                buf[where-2] = '\0';
+
+
+                                printf("Next message: %s\n", buf);
+                                // Note that we could have also used write to avoid having to
+                                // put the '\0' in the buffer. Try using write later!
+
+                                // Step 4: update inbuf and remove the full line from the buffer
+                                // There might be stuff after the line, so don't just do inbuf = 0.
+                                inbuf -= where;
+                                
+
+                                // You want to move the stuff after the full line to the beginning
+                                // of the buffer.  A loop can do it, or you can use memmove.
+                                memmove(buf, &(buf[where]), inbuf);
+
+
+                            }
+                            // Step 5: update after and room, in preparation for the next read.
+                            after = &(buf[inbuf]);
+                            room = MAX_BUF - inbuf;
+
+
+                        }
+
+
+
+
+                        // THE WHILE LOOP FROM THE LAB 10 ENDS HERE
+
+
+
+
+                        // int check = read(cur_fd, choice, 3);
+                        // print_read_status(check);
+                        if (cur_fd == game.has_next_turn->fd){
+                            // PROCESS THIS GUESS INTO THE GAME - check if letter in word
+                            // then update turns and everything
+                            // after processing...
+
+                            // test processing
+                            char test_buf[MAX_BUF] = {'\0'};
+                            sprintf(test_buf, "THIS IS A TEST: %s chose %s\r\n", game.has_next_turn->name, choice);
+                            broadcast(&game, test_buf);
+                            // test processing ends
+                            char message_choice[MAX_BUF] = {'\0'};
+                            char guess[MAX_BUF] = {'\0'};
+                            sprintf(guess, "You guessed %s\r\n", choice);
+                            write(cur_fd, guess, 15);
+                            sprintf(message_choice, "%s guessed %s\r\n", game.has_next_turn->name, choice);
+                            broadcast_audience(&game, message_choice);
+                        } else {
+                            write(cur_fd, "It is not your turn!\r\n", 21);
+                        }
                         //TODO - handle input from an active client
-                        //printf("reaches here\n");     
 
                                            
                         break;
@@ -290,6 +460,7 @@ int main(int argc, char **argv) {
         
                 // Check if any new players are entering their names
                 for(p = new_players; p != NULL; p = p->next) {
+                    len_ll(new_players);
                     printf("\n\n we are in the new players list right now\n\n");
                     if(cur_fd == p->fd) {
                         // TODO - handle input from an new client who has
@@ -309,11 +480,17 @@ int main(int argc, char **argv) {
                             //printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
                         }
                         add_player(&(game.head), cur_fd, p->ipaddr); // add this boy to game.head 
-                        strncpy(game.head->name, name, 30);
+                        strncpy(game.head->name, name, MAX_NAME);
                         //printf("the name that was just added to the linked list was: %s\n", game.head->name);
                         // remove player from new_players
                         remove_valid_player(&(new_players), p->fd);
-                        print_ll(game);
+                        char entry_msg[MAX_BUF] = {'\0'};
+                        sprintf(entry_msg, "%s has just joined the game!\r\n", game.head->name);
+                        broadcast(&game, entry_msg);
+                        set_initial_player(&game);
+                        char status[MAX_BUF];
+                        write(cur_fd, status_message(status, &game), MAX_BUF);
+                        //print_ll(game);
                         break;
                     } 
                 }
