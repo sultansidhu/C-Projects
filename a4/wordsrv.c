@@ -115,6 +115,20 @@ void broadcast(struct game_state *game, char *outbuf){
 }
 
 /**
+ * This function initializes the turns, when the first person 
+ * enters the game. 
+ */
+void initialize_turn(struct game_state * game){
+    if (game->has_next_turn == NULL){
+        struct client * current = game->head;
+        while (current->next != NULL){
+            current = current->next;
+        }
+        game->has_next_turn = current;
+    }
+}
+
+/**
  * This function announces the turn of the next player,
  * and broadcasts it to every active player.
  */
@@ -130,7 +144,12 @@ void announce_turn(struct game_state *game){
 void advance_turn(struct game_state *game){
     struct client * current = game->head;
     struct client * previous = NULL;
-    if(game->has_next_turn->fd == game->head->fd){
+    if (game->has_next_turn == NULL){
+        while (current->next != NULL){
+            current = current->next;
+        }
+        previous = current;
+    } else if(game->has_next_turn->fd == game->head->fd){
         while(current!=NULL){
             previous = current;
             current = current->next;
@@ -142,6 +161,7 @@ void advance_turn(struct game_state *game){
         }
     }
     game -> has_next_turn = previous;
+    write(game->has_next_turn->fd, "Your guess? ", 12);
 }
 
 /**
@@ -158,31 +178,14 @@ void broadcast_audience(struct game_state * game, char * outbuf){
     }
 }
 
-void len_ll(struct client * list){
+int len_ll(struct client * list){
     struct client * a = list;
     int counter = 0;
     while (a != NULL){
         counter++;
         a = a->next;
     }
-    printf("THE LENGTH OF THIS LINKED LIST IS %d\n", counter);
-}
-
-/**
- * This function will set the first turn, when the player is added 
- * to the active players list initially
- */
-void set_initial_player(struct game_state * game){
-    if(game->has_next_turn == NULL){
-        struct client * current = game->head;
-        while (current->next != NULL){
-            current = current->next;
-        }
-        game->has_next_turn = current;
-    } else {
-        return;
-        //TODO: LOOK IF THIS THING CHANGES WITHIN THE SCOPE OF THE FUNCTION ONLY OR NOT
-    }
+    return counter;
 }
 
 /**
@@ -233,6 +236,7 @@ void read_from_socket(int filedes, char * name_space){
 int name_not_found(struct client * game_head, char * user_name){
     struct client * current = game_head;
     int indicator = 0;
+    printf("REACHED NAME NOT FOUND 1\n");
     while (current != NULL){
         if (strcmp(current->name, user_name) == 0){
             printf("the name you entered has already been taken!\n");
@@ -240,6 +244,7 @@ int name_not_found(struct client * game_head, char * user_name){
         }
         current = current->next;
     }
+    printf("REACHED NAME NOT FOUND 2\n");
     return indicator;
 }
 
@@ -383,12 +388,12 @@ int main(int argc, char **argv) {
                         char buffer[MAX_BUF] = {'\0'};
                         sprintf(buffer, "It is currently %s's turn!\n", game.has_next_turn->name);
                         broadcast_audience(&game, buffer); // tell everyone else who's turn it is right now.
-                        char choice[3];
-                        if (cur_fd == game.has_next_turn->fd){
-                            write(cur_fd, "Your guess? \r\n", 12);
-                        } else {
-                            write(cur_fd, "ITS NOT YOUR TURN LOL SO YOUR GUESS DIDNT PRINT!\r\n",50); 
-                        }
+                        // char choice[3];
+                        // if (cur_fd == game.has_next_turn->fd){
+                        //     write(cur_fd, "Your guess? \r\n", 12);
+                        // } else {
+                        //     write(cur_fd, "ITS NOT YOUR TURN LOL SO YOUR GUESS DIDNT PRINT!\r\n",50); 
+                        // }
 
 
 
@@ -463,14 +468,14 @@ int main(int argc, char **argv) {
 
                             // test processing
                             char test_buf[MAX_BUF] = {'\0'};
-                            sprintf(test_buf, "THIS IS A TEST: %s chose %s\r\n", game.has_next_turn->name, choice);
+                            sprintf(test_buf, "THIS IS A TEST: %s chose %s\r\n", game.has_next_turn->name, after);
                             broadcast(&game, test_buf);
                             // test processing ends
                             char message_choice[MAX_BUF] = {'\0'};
                             char guess[MAX_BUF] = {'\0'};
-                            sprintf(guess, "You guessed %s\r\n", choice);
+                            sprintf(guess, "You guessed %s\r\n", after);
                             write(cur_fd, guess, 15);
-                            sprintf(message_choice, "%s guessed %s\r\n", game.has_next_turn->name, choice);
+                            sprintf(message_choice, "%s guessed %s\r\n", game.has_next_turn->name, after);
                             broadcast_audience(&game, message_choice);
                         } else {
                             write(cur_fd, "It is not your turn!\r\n", 21);
@@ -485,7 +490,6 @@ int main(int argc, char **argv) {
                 // Check if any new players are entering their names
                 for(p = new_players; p != NULL; p = p->next) {
                     len_ll(new_players);
-                    printf("\n\n we are in the new players list right now\n\n");
                     if(cur_fd == p->fd) {
                         // TODO - handle input from an new client who has
                         // not entered an acceptable name.
@@ -497,22 +501,27 @@ int main(int argc, char **argv) {
                         while((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name) == 1)){
                             char *greeting = WELCOME_MSG;
                             if(write(clientfd, greeting, strlen(greeting)) == -1) {
-                                fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
+                                // fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
+                                perror("Write greeting to new client failed.\n");
                                 remove_player(&(game.head), p->fd);
                             };
                             read_from_socket(cur_fd, name);
                             //printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
                         }
-                        printf("GAME HEAD NAME IS %s", game.head->name);
+
+                        //printf("GAME HEAD NAME IS %s", game.head->name);
                         add_player_to_game(&game, cur_fd, p->ipaddr, name);
-                        printf("GAME HEAD NAME IS %s", game.head->name);
                         remove_valid_player(&(new_players), p->fd);
                         char entry_msg[MAX_BUF] = {'\0'};
-                        sprintf(entry_msg, "%s has just joined the game!\r\n", game.head->name);
+                        sprintf(entry_msg, "\r\n%s has just joined the game!\r\n", game.head->name);
                         broadcast(&game, entry_msg);
-                        set_initial_player(&game);
                         char status[MAX_BUF] = {'\0'};
                         write(cur_fd, status_message(status, &game), MAX_BUF);
+                        if((len_ll(game.head)) == 1){
+                            initialize_turn(&game);
+                        }            
+                        write(game.has_next_turn->fd, "Your guess? ", 12);
+                        //advance_turn(&game);
                         //print_ll(game);
                         break;
                     } 
