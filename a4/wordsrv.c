@@ -374,6 +374,17 @@ void remove_player(struct client **top, int fd) {
     }
 }
 
+/**
+ * this function checks if the letter chosen by the player
+ * has already been chosen previously.
+ */
+int check_if_guessed(struct game_state * game, struct client * p){
+        int index = p->inbuf[0];
+        if (game->letters_guessed[index - 97] == 1){
+                return 0;
+        }
+        return 1;
+}
 
 int main(int argc, char **argv) {
     printf("remember to make wrapper functions\n");
@@ -521,7 +532,10 @@ int main(int argc, char **argv) {
 
 
 
+
+
                             // USE THE SAME READ STRUCTURE AS ABOVE
+                            sleep(1);
                             read(cur_fd, p->inbuf, 3);
                             if (find_network_newline2(p->inbuf, 3) == -1){
                                 break;
@@ -530,7 +544,28 @@ int main(int argc, char **argv) {
 
 
 
+
+
                         }
+                        int check_guessed;
+                        while((check_guessed = check_if_guessed(&game, p)) == 0){
+                            char * invalid = "This letter has already been guessed! Guess again!\r\n";
+                            write(cur_fd, invalid, strlen(invalid));
+
+
+
+
+
+                            // USE THE SAME READ STRUCTURE AS ABOVE
+                            sleep(1);
+                            read(cur_fd, p->inbuf, 3);
+                            if (find_network_newline2(p->inbuf, 3) == -1){
+                                break;
+                            }
+                        }
+                        
+                        
+                        
                         // check if the dude who gave input was the one who had the turn.
                         if (cur_fd == game.has_next_turn->fd){
                             char chosenmsg[MAX_BUF] = {'\0'};
@@ -542,6 +577,8 @@ int main(int argc, char **argv) {
                             int letter_in_word = check_letter_in_word(&game, p->inbuf);
                             if (letter_in_word == 0){
                                 // letter not in word
+                                int letter_guessed_asciii = p->inbuf[0];
+                                game.letters_guessed[letter_guessed_asciii-97] = 1;
                                 char letter_not_found[MAX_BUF] = {'\0'};
                                 sprintf(letter_not_found, "%c is not in the word!\r\n", p->inbuf[0]);
                                 write(cur_fd, letter_not_found, strlen(letter_not_found));
