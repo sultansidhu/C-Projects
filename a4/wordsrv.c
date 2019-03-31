@@ -84,6 +84,34 @@ void add_player_to_game(struct game_state * game, int fd, struct in_addr addr, c
     game->head = p;
 }
 
+/**
+ * This function checks if the letter guessed is in the word randomly
+ * chosen by the game or not.
+ */
+int check_letter_in_word(struct game_state * game, char * guess){
+    char guessed_letter = guess[0];
+    printf("THE GUESSED LETTER IS %c\n", guessed_letter);
+    for (int i = 0; i < strlen(game->word); i++){
+        if (guessed_letter == game->word[i]){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/**
+ * This function will go through the word that is being guessed and
+ * make the letters visible if and only if it has been guessed.
+ */
+void change_guess_scape(struct game_state * game, char * guess){
+    char guessed_letter = guess[0];
+    for (int i = 0; i < strlen(game->word); i++){
+        if (game->word[i] == guessed_letter){
+            game->guess[i] = guessed_letter;
+        }
+    }
+}
+
 /*
  * Search the first n characters of buf for a network newline (\r\n).
  * Return one plus the index of the '\n' of the first network newline,
@@ -134,7 +162,7 @@ void initialize_turn(struct game_state * game){
  */
 void announce_turn(struct game_state *game){
     char turn[MAX_BUF] = {'\0'};
-    sprintf(turn, "The next turn is of %s\r\n", game->has_next_turn->name);
+    sprintf(turn, "It is %s's turn.\r\n", game->has_next_turn->name);
     broadcast(game, turn);
 }
 
@@ -162,6 +190,7 @@ void advance_turn(struct game_state *game){
     }
     game -> has_next_turn = previous;
     write(game->has_next_turn->fd, "Your guess? ", 12);
+    announce_turn(game);
 }
 
 /**
@@ -385,104 +414,63 @@ int main(int argc, char **argv) {
                     //print_ll(game);
                     //write(cur_fd, "It comes into the for loop?", 26);
                     if(cur_fd == p->fd) {
-                        char buffer[MAX_BUF] = {'\0'};
-                        sprintf(buffer, "It is currently %s's turn!\n", game.has_next_turn->name);
-                        broadcast_audience(&game, buffer); // tell everyone else who's turn it is right now.
-                        // char choice[3];
-                        // if (cur_fd == game.has_next_turn->fd){
-                        //     write(cur_fd, "Your guess? \r\n", 12);
-                        // } else {
-                        //     write(cur_fd, "ITS NOT YOUR TURN LOL SO YOUR GUESS DIDNT PRINT!\r\n",50); 
-                        // }
+                        printf("THE CHOSEN WORD WAS %s\n", game.word);
+                        // read for input
+
+                        read(cur_fd, p->inbuf, 3);
+                        if (find_network_newline(p->inbuf, 3) == -1){
+                            break;
+                        }
 
 
 
-                        // THE WHILE LOOP FROM THE LAB 10 IS HERE
 
-                        int inbuf = 0;
-                        char buf[MAX_BUF] = {'\0'};
-                        int room = sizeof(buf);
-                        char * after = buf;
-                        int nbytes;
-
-                        while ((nbytes = read(cur_fd, after, room)) > 0) {
-                            // Step 1: update inbuf (how many bytes were just added?)
-                            inbuf += nbytes;
-                            printf("NBYTES IS: %d\n", nbytes);
-
-                            int where;
-
-                            // Step 2: the loop condition below calls find_network_newline
-                            // to determine if a full line has been read from the client.
-                            // Your next task should be to implement find_network_newline
-                            // (found at the bottom of this file).
-                            //
-                            // Note: we use a loop here because a single read might result in
-                            // more than one full line.
-                            while ((where = find_network_newline(buf, inbuf)) > 0) {
-                                printf("WHERE IS: %d\n", where);
-                                // Step 3: Okay, we have a full line.
-                                // Output the full line, not including the "\r\n",
-                                // using print statement below.
-                                // Be sure to put a '\0' in the correct place first;
-                                // otherwise you'll get junk in the output.
-                                buf[where-2] = '\0';
+                        // check input for validity
+                        printf("%lu %s\n", strlen(p->inbuf), p->inbuf);
+                        while ((strlen(p->inbuf) != 1) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
+                            char * invalid = "Invalid! Try again!\r\n";
+                            write(cur_fd, invalid, strlen(invalid));
 
 
-                                printf("Next message: %s\n", buf);
-                                // Note that we could have also used write to avoid having to
-                                // put the '\0' in the buffer. Try using write later!
-
-                                // Step 4: update inbuf and remove the full line from the buffer
-                                // There might be stuff after the line, so don't just do inbuf = 0.
-                                inbuf -= where;
-                                
-
-                                // You want to move the stuff after the full line to the beginning
-                                // of the buffer.  A loop can do it, or you can use memmove.
-                                memmove(buf, &(buf[where]), inbuf);
 
 
+                            read(cur_fd, p->inbuf, 3);
+                            if (find_network_newline(p->inbuf, 3) == -1){
+                                break;
                             }
-                            // Step 5: update after and room, in preparation for the next read.
-                            after = &(buf[inbuf]);
-                            room = MAX_BUF - inbuf;
+
+
 
 
                         }
-
-
-
-
-                        // THE WHILE LOOP FROM THE LAB 10 ENDS HERE
-
-
-
-
-                        // int check = read(cur_fd, choice, 3);
-                        // print_read_status(check);
+                        // check if the dude who gave input was the one who had the turn.
                         if (cur_fd == game.has_next_turn->fd){
-                            // PROCESS THIS GUESS INTO THE GAME - check if letter in word
-                            // then update turns and everything
-                            // after processing...
-
-                            // test processing
-                            char test_buf[MAX_BUF] = {'\0'};
-                            sprintf(test_buf, "THIS IS A TEST: %s chose %s\r\n", game.has_next_turn->name, after);
-                            broadcast(&game, test_buf);
-                            // test processing ends
-                            char message_choice[MAX_BUF] = {'\0'};
-                            char guess[MAX_BUF] = {'\0'};
-                            sprintf(guess, "You guessed %s\r\n", after);
-                            write(cur_fd, guess, 15);
-                            sprintf(message_choice, "%s guessed %s\r\n", game.has_next_turn->name, after);
-                            broadcast_audience(&game, message_choice);
+                            char chosenmsg[MAX_BUF] = {'\0'};
+                            sprintf(chosenmsg, "You guessed %s\r\n", p->inbuf);
+                            char audmsg[MAX_BUF] = {'\0'};
+                            sprintf(audmsg, "%s guesses: %s\r\n", game.has_next_turn->name, p->inbuf);
+                            broadcast_audience(&game, audmsg);
+                            //process the given letter
+                            int letter_in_word = check_letter_in_word(&game, p->inbuf);
+                            if (letter_in_word == 0){
+                                // letter not in word
+                                char letter_not_found[MAX_BUF] = {'\0'};
+                                sprintf(letter_not_found, "%c is not in the word!\r\n", p->inbuf[0]);
+                                write(cur_fd, letter_not_found, strlen(letter_not_found));
+                                game.guesses_left--;
+                                advance_turn(&game);
+                                // DO YOU BREAK HERE OR WHAT?!?!?
+                            } else {
+                                // letter in the word
+                                int letter_guessed_ascii = p->inbuf[0];
+                                game.letters_guessed[letter_guessed_ascii-97] = 1;
+                                change_guess_scape(&game, p->inbuf);
+                                //advance_turn(&game);
+                            }
                         } else {
-                            write(cur_fd, "It is not your turn!\r\n", 21);
-                        }
-                        //TODO - handle input from an active client
-
-                                           
+                            char * not_your_turn = "Not your turn!\r\n";
+                            write(cur_fd, not_your_turn, strlen(not_your_turn));
+                        }                 
                         break;
                     }
                 }
@@ -508,7 +496,6 @@ int main(int argc, char **argv) {
                             read_from_socket(cur_fd, name);
                             //printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
                         }
-
                         //printf("GAME HEAD NAME IS %s", game.head->name);
                         add_player_to_game(&game, cur_fd, p->ipaddr, name);
                         remove_valid_player(&(new_players), p->fd);
@@ -531,3 +518,150 @@ int main(int argc, char **argv) {
     }
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// CODE QUARANTINE
+
+
+// 1. THIS IS THE CODE FROM LAB 10, WE LOOP OVER SHIT AND FIND NETWORK NEWLINE.
+ // tell everyone else who's turn it is right now.
+                        // char choice[3];
+                        // if (cur_fd == game.has_next_turn->fd){
+                        //     write(cur_fd, "Your guess? \r\n", 12);
+                        // } else {
+                        //     write(cur_fd, "ITS NOT YOUR TURN LOL SO YOUR GUESS DIDNT PRINT!\r\n",50); 
+                        // }
+
+
+
+                        // // THE WHILE LOOP FROM THE LAB 10 IS HERE
+
+                        // int inbuf = 0;
+                        // char buf[MAX_BUF] = {'\0'};
+                        // int room = sizeof(buf);
+                        // char * after = buf;
+                        // int nbytes;
+
+                        // while ((nbytes = read(cur_fd, after, room)) > 0) {
+                        //     // Step 1: update inbuf (how many bytes were just added?)
+                        //     inbuf += nbytes;
+                        //     printf("NBYTES IS: %d\n", nbytes);
+
+                        //     int where;
+
+                        //     // Step 2: the loop condition below calls find_network_newline
+                        //     // to determine if a full line has been read from the client.
+                        //     // Your next task should be to implement find_network_newline
+                        //     // (found at the bottom of this file).
+                        //     //
+                        //     // Note: we use a loop here because a single read might result in
+                        //     // more than one full line.
+                        //     while ((where = find_network_newline(buf, inbuf)) > 0) {
+                        //         printf("WHERE IS: %d\n", where);
+                        //         // Step 3: Okay, we have a full line.
+                        //         // Output the full line, not including the "\r\n",
+                        //         // using print statement below.
+                        //         // Be sure to put a '\0' in the correct place first;
+                        //         // otherwise you'll get junk in the output.
+                        //         buf[where-2] = '\0';
+
+
+                        //         printf("Next message: %s\n", buf);
+                        //         // Note that we could have also used write to avoid having to
+                        //         // put the '\0' in the buffer. Try using write later!
+
+                        //         // Step 4: update inbuf and remove the full line from the buffer
+                        //         // There might be stuff after the line, so don't just do inbuf = 0.
+                        //         inbuf -= where;
+                                
+
+                        //         // You want to move the stuff after the full line to the beginning
+                        //         // of the buffer.  A loop can do it, or you can use memmove.
+                        //         memmove(buf, &(buf[where]), inbuf);
+
+
+                        //     }
+                        //     // Step 5: update after and room, in preparation for the next read.
+                        //     after = &(buf[inbuf]);
+                        //     room = MAX_BUF - inbuf;
+
+
+                        // }
+
+
+
+
+                        // // THE WHILE LOOP FROM THE LAB 10 ENDS HERE
+
+
+// 2. 
+// THE REST OF THE SHIT THAT CAME AFTER THE CODE RIGHT ABOVE THIS COMMENT, THE LAB 10 SHIT
+
+                        // // int check = read(cur_fd, choice, 3);
+                        // // print_read_status(check);
+                        // if (cur_fd == game.has_next_turn->fd){
+                        //     // PROCESS THIS GUESS INTO THE GAME - check if letter in word
+                        //     // then update turns and everything
+                        //     // after processing...
+
+                        //     // test processing
+                        //     char test_buf[MAX_BUF] = {'\0'};
+                        //     sprintf(test_buf, "THIS IS A TEST: %s chose %s\r\n", game.has_next_turn->name, after);
+                        //     broadcast(&game, test_buf);
+                        //     // test processing ends
+                        //     char message_choice[MAX_BUF] = {'\0'};
+                        //     char guess[MAX_BUF] = {'\0'};
+                        //     sprintf(guess, "You guessed %s\r\n", after);
+                        //     write(cur_fd, guess, 15);
+                        //     sprintf(message_choice, "%s guessed %s\r\n", game.has_next_turn->name, after);
+                        //     broadcast_audience(&game, message_choice);
+                        // } else {
+                        //     write(cur_fd, "It is not your turn!\r\n", 21);
+                        // }
+
+
+
+//3. THIS BITCH LOOPS WHILE READING LOL
+
+                        // char guess[3];
+                        // read(cur_fd, guess, 3);
+                        
+
+
+                        // int inbuf = 0;           // How many bytes currently in buffer?
+                        // int room = sizeof(p->inbuf);  // How many bytes remaining in buffer?
+                        // p->in_ptr = p->inbuf;
+                        // int nbytes;
+                        // while((nbytes = read(cur_fd, p->in_ptr, room)) > 0){
+                        //     inbuf += nbytes;
+                        //     int where;
+                        //     while((where = find_network_newline(p->inbuf, inbuf)) > 0){
+                        //         p->inbuf[where-2] = '\0';
+                        //         inbuf -= where;
+                        //         memmove(p->inbuf, &(p->inbuf[where]), inbuf);
+                        //     }
+                        //     p->in_ptr = &(p->inbuf[inbuf]);
+                        //     room = MAX_BUF - inbuf;
+                        // }
