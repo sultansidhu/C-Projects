@@ -223,8 +223,9 @@ void advance_turn(struct game_state *game){
         }
     }
     game -> has_next_turn = previous;
-    write(game->has_next_turn->fd, "Your guess? ", 12);
     announce_turn(game);
+    write(game->has_next_turn->fd, "Your guess? \r\n", 14);
+    
 }
 
 /**
@@ -262,6 +263,22 @@ void print_ll(struct game_state game){
         printf("file descriptor: %d\n", head->fd);
         head = head->next;
     }
+}
+
+/**
+ * This function checks if the player playing the game has finished the game
+ * by either exhausting the number of guesses or by guessing the complete word.
+ */
+int check_gameover(struct game_state * game){
+    if (game->guesses_left == 0){
+        return 0; // game over because no guesses left
+    } 
+    for (int i = 0; i < strlen(game->guess); i++){
+        if (game->guess[i] == '-'){
+                return 1; // this game isnt over
+        }
+    }
+    return 2; // this game is over because the player with current turn won.
 }
 
 /**
@@ -529,9 +546,17 @@ int main(int argc, char **argv) {
                                 sprintf(letter_not_found, "%c is not in the word!\r\n", p->inbuf[0]);
                                 write(cur_fd, letter_not_found, strlen(letter_not_found));
                                 game.guesses_left--;
-                                advance_turn(&game);
+                                
                                 char new_turn_status[MAX_BUF] = {'\0'};
-                                broadcast(&game, status_message(new_turn_status, &game));
+                                int over2 = check_gameover(&game);
+                                if (over2 == 0){
+                                        broadcast(&game, "Game over! No more guesses left!\r\n");
+                                        // FIGURE OUT A WAY TO RESTART THE GAME!
+                                } else {
+                                        broadcast(&game, status_message(new_turn_status, &game));
+                                        advance_turn(&game);
+                                }
+                                
                             } else {
                                 // letter in the word
                                 int letter_guessed_ascii = p->inbuf[0];
@@ -541,6 +566,18 @@ int main(int argc, char **argv) {
 				char new_turn_status[MAX_BUF] = {'\0'};
                                 broadcast(&game, status_message(new_turn_status, &game));
 				write(cur_fd, "Your guess? \r\n", 14);// THIS WRITE CALL FAILED IDK WHY
+				int over = check_gameover(&game);
+				if (over == 1){
+				        // game not over, more guesses to go
+				} else if (over == 2) {
+				        // game over, all letters were guessed.
+				        char winner[MAX_BUF] = {'\0'};
+				        sprintf(winner, "And the winner is ... %s!!\r\n", game.has_next_turn->name);
+				        broadcast(&game, winner);
+				        // FIGURE OUT A WAY TO RESTART THE GAME!
+				} else {
+				        printf("THIS SHOULDNT BE HAPPENING BOY\n");
+				}
                             }
                         } else {
                             char * not_your_turn = "Not your turn!\r\n";
