@@ -123,8 +123,19 @@ int find_network_newline(const char *buf, int n) {
     for (int i = 0; i < n-1; i++){
         minibuffer[0] = buf[i];
         minibuffer[1] = buf[i+1];
+        printf("THE MINIBUFFER IS %s\n", minibuffer);
         if (strcmp(minibuffer, "\r\n")==0){
               return i+2;
+        }
+    }
+    return -1;
+}
+
+int find_network_newline2(const char * buf, int n){
+    for (int i = 0; i < n; i++){
+        if (buf[i] == '\r'){
+            printf("match found!\n");
+            return i+2;
         }
     }
     return -1;
@@ -139,7 +150,8 @@ int get_full_read(struct client * p){
     int nbytes;
     nbytes = read(p->fd, p->in_ptr, 3);
     p->in_ptr += nbytes;
-    int newline = find_network_newline(p->in_ptr, 3);
+    int newline = find_network_newline2(p->inbuf, MAX_BUF);
+    printf("THE NEWLINE CAME OUT TO BE: %d\n", newline);
     if (newline == -1){
         return -1;
     } else {
@@ -436,15 +448,26 @@ int main(int argc, char **argv) {
                     //print_ll(game);
                     //write(cur_fd, "It comes into the for loop?", 26);
                     if(cur_fd == p->fd) {
-                        printf("THE CHOSEN WORD WAS %s\n", game.word);
                         // read for input
                         char choice;
 
-                        int read_checker = get_full_read(p);
-                        if (read_checker == -1){
+                        //int read_checker = get_full_read(p);
+                        p -> in_ptr = p->inbuf;
+                        int nbytes;
+                        nbytes = read(p->fd, p->in_ptr, 3);
+                        p->in_ptr += nbytes;
+                        int newline = find_network_newline2(p->inbuf, MAX_BUF);
+                        printf("THE NEWLINE CAME OUT TO BE: %d\n", newline);
+                        if (newline == -1){
                             break;
                         } else {
-                            choice = p->inbuf[read_checker];
+                            //return newline-2;
+                        }
+                        printf("THE FULL READ GAVE %s AND THE READ CHECKER IS %d\n", p->inbuf, newline-2);
+                        if (newline-2 == -1){
+                            break;
+                        } else {
+                            choice = p->inbuf[newline-2];
                         }
 
                         // read(cur_fd, p->inbuf, 3);
@@ -456,8 +479,8 @@ int main(int argc, char **argv) {
 
 
                         // check input for validity
-                        printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[read_checker]);
-                        while ((strlen(p->inbuf) != 1) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
+                        printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[newline-2]);
+                        while ((strlen(p->inbuf) != 3) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
                             char * invalid = "Invalid! Try again!\r\n";
                             write(cur_fd, invalid, strlen(invalid));
 
@@ -489,7 +512,8 @@ int main(int argc, char **argv) {
                                 write(cur_fd, letter_not_found, strlen(letter_not_found));
                                 game.guesses_left--;
                                 advance_turn(&game);
-                                // DO YOU BREAK HERE OR WHAT?!?!?
+                                char new_turn_status[MAX_BUF] = {'\0'};
+                                broadcast(&game, status_message(new_turn_status, &game));
                             } else {
                                 // letter in the word
                                 int letter_guessed_ascii = p->inbuf[0];
@@ -538,6 +562,7 @@ int main(int argc, char **argv) {
                             initialize_turn(&game);
                         }            
                         write(game.has_next_turn->fd, "Your guess? ", 12);
+                        printf("THE CHOSEN WORD WAS %s\n", game.word);
                         //advance_turn(&game);
                         //print_ll(game);
                         break;
