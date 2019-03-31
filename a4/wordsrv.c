@@ -16,7 +16,7 @@
 
 
 #ifndef PORT
-    #define PORT 59994
+    #define PORT 59995
 #endif
 #define MAX_QUEUE 5
 
@@ -454,21 +454,39 @@ int main(int argc, char **argv) {
                         //int read_checker = get_full_read(p);
                         p -> in_ptr = p->inbuf;
                         int nbytes;
+
+
+
+
+
+
+
+
+			sleep(1); 
+// MAKE IT WORK WITHOUT THE SLEEP CALL
+// ALSO CHECK FOR WHEN THE PLAYER HAS WON THE GAME
+// THIS GAME WORKS (MOSTLY) WITH ONE PLAYER
+
+
+
+
+
+
+
+
                         nbytes = read(p->fd, p->in_ptr, 3);
                         p->in_ptr += nbytes;
                         int newline = find_network_newline2(p->inbuf, MAX_BUF);
                         printf("THE NEWLINE CAME OUT TO BE: %d\n", newline);
                         if (newline == -1){
                             break;
-                        } else {
-                            //return newline-2;
                         }
-                        printf("THE FULL READ GAVE %s AND THE READ CHECKER IS %d\n", p->inbuf, newline-2);
-                        if (newline-2 == -1){
-                            break;
-                        } else {
-                            choice = p->inbuf[newline-2];
-                        }
+                        printf("THE FULL READ GAVE letter %c AND THE READ CHECKER IS %d\n", p->inbuf[0], newline-3);
+                        //if (newline-3 == -1){
+                         //   break;
+                        //} else {
+                         //   choice = p->inbuf[newline-3];
+                        //}
 
                         // read(cur_fd, p->inbuf, 3);
                         // if (find_network_newline(p->inbuf, 3) == -1){
@@ -479,7 +497,7 @@ int main(int argc, char **argv) {
 
 
                         // check input for validity
-                        printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[newline-2]);
+                        printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[newline-3]);
                         while ((strlen(p->inbuf) != 3) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
                             char * invalid = "Invalid! Try again!\r\n";
                             write(cur_fd, invalid, strlen(invalid));
@@ -488,7 +506,7 @@ int main(int argc, char **argv) {
 
                             // USE THE SAME READ STRUCTURE AS ABOVE
                             read(cur_fd, p->inbuf, 3);
-                            if (find_network_newline(p->inbuf, 3) == -1){
+                            if (find_network_newline2(p->inbuf, 3) == -1){
                                 break;
                             }
 
@@ -520,6 +538,9 @@ int main(int argc, char **argv) {
                                 game.letters_guessed[letter_guessed_ascii-97] = 1;
                                 change_guess_scape(&game, p->inbuf);
                                 //advance_turn(&game);
+				char new_turn_status[MAX_BUF] = {'\0'};
+                                broadcast(&game, status_message(new_turn_status, &game));
+				write(cur_fd, "Your guess? \r\n", 14);// THIS WRITE CALL FAILED IDK WHY
                             }
                         } else {
                             char * not_your_turn = "Not your turn!\r\n";
