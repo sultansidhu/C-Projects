@@ -131,6 +131,28 @@ int find_network_newline(const char *buf, int n) {
 }
 
 /**
+ * This function makes sure that no partial reads are allowed
+ * into the system.
+ */
+int get_full_read(struct client * p){
+    p -> in_ptr = p->inbuf;
+    int nbytes;
+    nbytes = read(p->fd, p->in_ptr, 3);
+    p->in_ptr += nbytes;
+    int newline = find_network_newline(p->in_ptr, 3);
+    if (newline == -1){
+        return -1;
+    } else {
+        return newline-2;
+    }
+    // if ((newline = find_network_newline(p->inbuf, 3)) == -1){
+    //     return -1;
+    // } else {
+    //     return newline - 2;
+    // }
+}
+
+/**
  * This function broadcasts a message to all the currently
  * active players in the game.
  */
@@ -416,24 +438,32 @@ int main(int argc, char **argv) {
                     if(cur_fd == p->fd) {
                         printf("THE CHOSEN WORD WAS %s\n", game.word);
                         // read for input
+                        char choice;
 
-                        read(cur_fd, p->inbuf, 3);
-                        if (find_network_newline(p->inbuf, 3) == -1){
+                        int read_checker = get_full_read(p);
+                        if (read_checker == -1){
                             break;
+                        } else {
+                            choice = p->inbuf[read_checker];
                         }
+
+                        // read(cur_fd, p->inbuf, 3);
+                        // if (find_network_newline(p->inbuf, 3) == -1){
+                        //     break;
+                        // }
 
 
 
 
                         // check input for validity
-                        printf("%lu %s\n", strlen(p->inbuf), p->inbuf);
+                        printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[read_checker]);
                         while ((strlen(p->inbuf) != 1) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
                             char * invalid = "Invalid! Try again!\r\n";
                             write(cur_fd, invalid, strlen(invalid));
 
 
 
-
+                            // USE THE SAME READ STRUCTURE AS ABOVE
                             read(cur_fd, p->inbuf, 3);
                             if (find_network_newline(p->inbuf, 3) == -1){
                                 break;
