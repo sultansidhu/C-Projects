@@ -630,7 +630,7 @@ int main(int argc, char **argv) {
 				        init_game(&game, argv[1]);
 				        char msgbuf[MAX_BUF] = {'\0'};
 				        char * smsg = status_message(msgbuf, &game);
-				        write(cur_fd, smsg, strlen(smsg));
+				        broadcast(&game, smsg);
 				        advance_turn(&game);
 				        //break;
 				        // FIGURE OUT A WAY TO RESTART THE GAME!
