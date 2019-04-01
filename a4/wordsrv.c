@@ -171,7 +171,7 @@ int get_full_read(struct client * p){
 void broadcast(struct game_state *game, char *outbuf){
     struct client * top = game->head;
     while(top != NULL){
-        write(top->fd, outbuf, MAX_BUF);
+        write(top->fd, outbuf, strlen(outbuf));
         top = top->next;
     }
 }
@@ -600,7 +600,7 @@ int main(int argc, char **argv) {
                                 int over2 = check_gameover(&game);
                                 if (over2 == 0){
                                         char * gameover = "Game over! No more guesses left!\r\n";
-                                        broadcast_gameover(&game, gameover, strlen(gameover));
+                                        broadcast(&game, gameover);
                                         init_game(&game, argv[1]);
                                         advance_turn(&game);
                                         // FIGURE OUT A WAY TO RESTART THE GAME!
@@ -625,8 +625,8 @@ int main(int argc, char **argv) {
 				        // game over, all letters were guessed.
 				        char winner[MAX_BUF] = {'\0'};
 				        sprintf(winner, "And the winner is ... %s!!\r\n", game.has_next_turn->name);
-				        broadcast_gameover(&game, winner, strlen(winner));
-				        broadcast_gameover(&game, "\r\nStarting new game...\r\n", 24);
+				        broadcast(&game, winner);
+				        broadcast(&game, "\r\nStarting new game...\r\n");
 				        init_game(&game, argv[1]);
 				        char msgbuf[MAX_BUF] = {'\0'};
 				        char * smsg = status_message(msgbuf, &game);
@@ -675,6 +675,11 @@ int main(int argc, char **argv) {
                             initialize_turn(&game);
                         }            
                         write(game.has_next_turn->fd, "Your guess? ", 12);
+                        if (cur_fd != game.has_next_turn->fd){
+                                char bufffer[MAX_BUF] = {'\0'};
+                                sprintf(bufffer,"It is currently %s's turn.\r\n", game.has_next_turn->name);
+                                write(cur_fd, bufffer, strlen(bufffer));
+                        }
                         printf("THE CHOSEN WORD WAS %s\n", game.word);
                         //advance_turn(&game);
                         break;
