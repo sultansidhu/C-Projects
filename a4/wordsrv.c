@@ -46,6 +46,22 @@ fd_set allset;
 // HELPER FUNCTIONS
 
 /**
+ * This function checks if the player playing the game has finished the game
+ * by either exhausting the number of guesses or by guessing the complete word.
+ */
+int check_gameover(struct game_state * game){
+    if (game->guesses_left == 0){
+        return 0; // game over because no guesses left
+    } 
+    for (int i = 0; i < strlen(game->guess); i++){
+        if (game->guess[i] == '-'){
+                return 1; // this game isnt over
+        }
+    }
+    return 2; // this game is over because the player with current turn won.
+}
+
+/**
  * This function prints the number of bytes read onto the
  * screen.
  */
@@ -224,8 +240,10 @@ void advance_turn(struct game_state *game){
     }
     game -> has_next_turn = previous;
     announce_turn(game);
-    write(game->has_next_turn->fd, "Your guess? \r\n", 14);
-    
+    if (check_gameover(game) == 1){
+        // if game is not over, print "Your guess? "
+        write(game->has_next_turn->fd, "Your guess? \r\n", 14);
+    }
 }
 
 /**
@@ -266,33 +284,30 @@ void print_ll(struct game_state game){
 }
 
 /**
- * This function checks if the player playing the game has finished the game
- * by either exhausting the number of guesses or by guessing the complete word.
- */
-int check_gameover(struct game_state * game){
-    if (game->guesses_left == 0){
-        return 0; // game over because no guesses left
-    } 
-    for (int i = 0; i < strlen(game->guess); i++){
-        if (game->guess[i] == '-'){
-                return 1; // this game isnt over
-        }
-    }
-    return 2; // this game is over because the player with current turn won.
-}
-
-/**
  * This function removes a player that has entered a valid name, and adds it
  * onto the linked list of active players.
  */
 void remove_valid_player(struct client ** list, int fd){
-    struct client * next;
+    printf("remove valid player is causing problems.");
     if (*list != NULL){
-        next = (*list)->next;
-        printf("Removing player from latent player list %d\n", fd);
-        free(*list);
-        *list = next;
-    } else {
+        if (len_ll(*list) == 1){
+            struct client * first;
+            first = (*list)->next;
+            printf("Removing player from latent player list %d\n", fd);
+            free(*list);
+            *list = first;
+        } else {
+            // remove the dude who just entered their name, even if it was out of turn. 
+            struct client * head = *list;
+            struct client * previous = NULL;
+            while(head != NULL && head->fd != fd){
+                previous = head; 
+                head = head->next;
+            }
+            struct client * next = head->next;
+            previous->next = next;
+        }
+    } else { 
         fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n",fd);
     }
 }
@@ -601,7 +616,9 @@ int main(int argc, char **argv) {
                                 if (over2 == 0){
                                         char * gameover = "Game over! No more guesses left!\r\n";
                                         broadcast(&game, gameover);
+                                        broadcast(&game, "Starting new game...\r\n");
                                         init_game(&game, argv[1]);
+                                        broadcast(&game, status_message(new_turn_status, &game));
                                         advance_turn(&game);
                                         // FIGURE OUT A WAY TO RESTART THE GAME!
                                 } else {
@@ -662,23 +679,33 @@ int main(int argc, char **argv) {
                                 fprintf(stderr, "Write greeting to new client failed.\n");
                                 remove_player(&(game.head), p->fd);
                             };
+                            //printf("GOT HERE\n");
                             read_from_socket(cur_fd, name);
+                            //printf("GOT PAST READ FROM SOCKET \n");
+                            // PUT PRINT STATEMENTS EVERYWHERE IN THE SECOND TODO AND FIGURE OUT LOCATION OF THE SEGFAULT.
                         }
                         add_player_to_game(&game, cur_fd, p->ipaddr, name);
+                         
                         remove_valid_player(&(new_players), p->fd);
+                         
                         char entry_msg[MAX_BUF] = {'\0'};
                         sprintf(entry_msg, "\r\n%s has just joined the game!\r\n", game.head->name);
                         broadcast(&game, entry_msg);
+                         
                         char status[MAX_BUF] = {'\0'};
                         write(cur_fd, status_message(status, &game), MAX_BUF);
+                         
                         if((len_ll(game.head)) == 1){
                             initialize_turn(&game);
                         }            
+                         
                         write(game.has_next_turn->fd, "Your guess? ", 12);
+                         
                         if (cur_fd != game.has_next_turn->fd){
                                 char bufffer[MAX_BUF] = {'\0'};
                                 sprintf(bufffer,"It is currently %s's turn.\r\n", game.has_next_turn->name);
                                 write(cur_fd, bufffer, strlen(bufffer));
+                                 
                         }
                         printf("THE CHOSEN WORD WAS %s\n", game.word);
                         //advance_turn(&game);
