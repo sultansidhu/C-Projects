@@ -288,7 +288,6 @@ void print_ll(struct game_state game){
  * onto the linked list of active players.
  */
 void remove_valid_player(struct client ** list, int fd){
-    printf("remove valid player is causing problems.");
     if (*list != NULL){
         if (len_ll(*list) == 1){
             struct client * first;
@@ -305,7 +304,12 @@ void remove_valid_player(struct client ** list, int fd){
                 head = head->next;
             }
             struct client * next = head->next;
-            previous->next = next;
+            if (previous != NULL){
+                previous->next = next;
+            } else {
+                *list = next;
+            }
+            
         }
     } else { 
         fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n",fd);
