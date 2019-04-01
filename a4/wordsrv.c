@@ -290,6 +290,7 @@ void remove_valid_player(struct client ** list, int fd){
     if (*list != NULL){
         next = (*list)->next;
         printf("Removing player from latent player list %d\n", fd);
+        free(*list);
         *list = next;
     } else {
         fprintf(stderr, "Trying to remove fd %d, but I don't know about it\n",fd);
@@ -349,6 +350,17 @@ void add_player(struct client **top, int fd, struct in_addr addr) {
     p->inbuf[0] = '\0';
     p->next = *top;
     *top = p;
+}
+/**
+ * This function broadcasts that the game is over,and the new
+ * game is about to start.
+ */
+void broadcast_gameover(struct game_state * game, char * outbuf, int limit){
+        struct client * head = game->head;
+        while(head != NULL){
+                write(head->fd, outbuf, limit);
+                head = head->next;
+        }
 }
 
 /* Removes client from the linked list and closes its socket.
@@ -587,7 +599,10 @@ int main(int argc, char **argv) {
                                 char new_turn_status[MAX_BUF] = {'\0'};
                                 int over2 = check_gameover(&game);
                                 if (over2 == 0){
-                                        broadcast(&game, "Game over! No more guesses left!\r\n");
+                                        char * gameover = "Game over! No more guesses left!\r\n";
+                                        broadcast_gameover(&game, gameover, strlen(gameover));
+                                        init_game(&game, argv[1]);
+                                        advance_turn(&game);
                                         // FIGURE OUT A WAY TO RESTART THE GAME!
                                 } else {
                                         broadcast(&game, status_message(new_turn_status, &game));
@@ -610,7 +625,14 @@ int main(int argc, char **argv) {
 				        // game over, all letters were guessed.
 				        char winner[MAX_BUF] = {'\0'};
 				        sprintf(winner, "And the winner is ... %s!!\r\n", game.has_next_turn->name);
-				        broadcast(&game, winner);
+				        broadcast_gameover(&game, winner, strlen(winner));
+				        broadcast_gameover(&game, "\r\nStarting new game...\r\n", 24);
+				        init_game(&game, argv[1]);
+				        char msgbuf[MAX_BUF] = {'\0'};
+				        char * smsg = status_message(msgbuf, &game);
+				        write(cur_fd, smsg, strlen(smsg));
+				        advance_turn(&game);
+				        //break;
 				        // FIGURE OUT A WAY TO RESTART THE GAME!
 				} else {
 				        printf("THIS SHOULDNT BE HAPPENING BOY\n");
@@ -633,19 +655,15 @@ int main(int argc, char **argv) {
                         char * name = malloc(MAX_BUF);
                         printf("free this malloc'd space\n");
                         read_from_socket(cur_fd, name);
-
-                        //printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
                         while((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name) == 1)){
                             char *greeting = WELCOME_MSG;
                             if(write(clientfd, greeting, strlen(greeting)) == -1) {
                                 // fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
-                                perror("Write greeting to new client failed.\n");
+                                fprintf(stderr, "Write greeting to new client failed.\n");
                                 remove_player(&(game.head), p->fd);
                             };
                             read_from_socket(cur_fd, name);
-                            //printf("the name we recieved over on this side was: %s with length %lu\n", name, strlen(name));
                         }
-                        //printf("GAME HEAD NAME IS %s", game.head->name);
                         add_player_to_game(&game, cur_fd, p->ipaddr, name);
                         remove_valid_player(&(new_players), p->fd);
                         char entry_msg[MAX_BUF] = {'\0'};
@@ -659,7 +677,6 @@ int main(int argc, char **argv) {
                         write(game.has_next_turn->fd, "Your guess? ", 12);
                         printf("THE CHOSEN WORD WAS %s\n", game.word);
                         //advance_turn(&game);
-                        //print_ll(game);
                         break;
                     } 
                 }
