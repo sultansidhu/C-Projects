@@ -545,75 +545,73 @@ int main(int argc, char **argv) {
                         // read for input
                         char choice;
 
-                        //int read_checker = get_full_read(p);
-                        p -> in_ptr = p->inbuf;
-                        int nbytes;
+                        int nbytes = 0;
+                        int position_in_inbuf = 0;
+                        nbytes = read(cur_fd, &(p->in_ptr), 5);
+
+                        printf("read call didnt block\n");
 
 
-
-
-
-
-
-
-			sleep(1); 
-// MAKE IT WORK WITHOUT THE SLEEP CALL
-// ALSO CHECK FOR WHEN THE PLAYER HAS WON THE GAME
-// THIS GAME WORKS (MOSTLY) WITH ONE PLAYER
-
-
-
-
-
-
-
-
-                        nbytes = read(p->fd, p->in_ptr, 3);
-                        if (nbytes == 0){
-                           
-                                printf("SO THIS GOT EXECUTED LOL\n");
-                                if (len_ll(game.head) == 1){
-                                        game.has_next_turn = NULL;
-                                } else {
-                                        advance_turn(&game);
-                                }
-                                remove_player(&(game.head), p->fd);
-                                
-                                break;
+                        if(nbytes == 0){
+                            printf("THIS BOY GETTIN KICKED BC HE CANT READ\n");
+                            if (len_ll(game.head) != 1){
+                                advance_turn(&game);
+                                remove_player(&(game.head), cur_fd);
+                            } else {
+                                game.has_next_turn = NULL;
+                                remove_player(&game.head, cur_fd);
+                            }
+                        } else if (nbytes == -1){
+                            perror("read");
+                            exit(1);
                         }
+
+
+                        //position_in_inbuf += nbytes;
                         p->in_ptr += nbytes;
-                        int newline = find_network_newline2(p->inbuf, MAX_BUF);
-                        printf("THE NEWLINE CAME OUT TO BE: %d\n", newline);
-                        if (newline == -1){
+                        int where;
+                        if ((where = find_network_newline(p->inbuf, position_in_inbuf)) < 0){
+                            printf("this guy broke loop\n");
                             break;
+                        } else {
+                            p->inbuf[where-2] = '\0';
+                            printf("WHAT YOU GOT RIGHT NOW IS %s boys\n", p->inbuf); 
+                            p->in_ptr -= where;
+                            memmove(p->inbuf, &(p->inbuf[where]), p->in_ptr-p->inbuf);
                         }
-                        printf("THE FULL READ GAVE letter %c AND THE READ CHECKER IS %d\n", p->inbuf[0], newline-3);
-                        //if (newline-3 == -1){
-                         //   break;
-                        //} else {
-                         //   choice = p->inbuf[newline-3];
-                        //}
 
-                        // read(cur_fd, p->inbuf, 3);
-                        // if (find_network_newline(p->inbuf, 3) == -1){
+
+
+
+                        
+
+
+                        // int nbytes;
+                        // int number_of_bytes = 0;
+                        // nbytes = read(cur_fd, p->inbuf, 5);
+                        
+                        // p->in_ptr += nbytes;
+                        // number_of_bytes += nbytes;
+                        // int where;
+                        // if ((where = find_network_newline2(p->inbuf, number_of_bytes)) <= 0){
                         //     break;
+                        // } else {
+                                             
                         // }
 
 
 
 
+
+
+
                         // check input for validity
-                        printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[newline-3]);
-                        while ((strlen(p->inbuf) != 3) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
+                        printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[0]);
+                        while ((strlen(p->inbuf) != 1) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
                             char * invalid = "Invalid! Try again!\r\n";
                             if (write(cur_fd, invalid, strlen(invalid)) == -1){
                                 remove_player(&(game.head), cur_fd);
                             }
-
-
-
-
-
                             // USE THE SAME READ STRUCTURE AS ABOVE
                             sleep(1);
                             if(read(cur_fd, p->inbuf, 3) == 0){
@@ -943,3 +941,83 @@ int main(int argc, char **argv) {
                         //     p->in_ptr = &(p->inbuf[inbuf]);
                         //     room = MAX_BUF - inbuf;
                         // }
+
+
+// 4. MY PREVIOUS READING FORMULA 
+
+
+
+                        // int checker_for_ntwk_newline = find_network_newline2(p->inbuf, MAX_BUF);
+                        // if (checker_for_ntwk_newline == -1){
+                        //     break;
+                        // }
+                        // while (checker_for_ntwk_newline == -1){
+                        //     nbytes = read(cur_fd, p->in_ptr, 5);
+                        //     checker_for_ntwk_newline = find_network_newline2(p->inbuf, MAX_BUF);
+                        // }
+
+
+
+
+
+
+
+
+
+
+
+
+                        // p -> in_ptr = p->inbuf;
+                        // int nbytes;
+
+
+
+
+
+
+
+
+			            // sleep(1); 
+                        // // MAKE IT WORK WITHOUT THE SLEEP CALL
+                        // // ALSO CHECK FOR WHEN THE PLAYER HAS WON THE GAME
+                        // // THIS GAME WORKS (MOSTLY)
+
+
+
+
+
+
+
+
+                        // nbytes = read(p->fd, p->in_ptr, 3);
+                        // if (nbytes == 0){
+                           
+                        //         printf("SO THIS GOT EXECUTED LOL\n");
+                        //         if (len_ll(game.head) == 1){
+                        //                 game.has_next_turn = NULL;
+                        //         } else {
+                        //                 advance_turn(&game);
+                        //         }
+                        //         remove_player(&(game.head), p->fd);
+                                
+                        //         break;
+                        // }
+                        // p->in_ptr += nbytes;
+                        // int newline = find_network_newline2(p->inbuf, MAX_BUF);
+                        // printf("THE NEWLINE CAME OUT TO BE: %d\n", newline);
+                        // if (newline == -1){
+                        //     break;
+                        // }
+                        // printf("THE FULL READ GAVE letter %c AND THE READ CHECKER IS %d\n", p->inbuf[0], newline-3);
+                        // //if (newline-3 == -1){
+                        //  //   break;
+                        // //} else {
+                        //  //   choice = p->inbuf[newline-3];
+                        // //}
+
+                        // // read(cur_fd, p->inbuf, 3);
+                        // // if (find_network_newline(p->inbuf, 3) == -1){
+                        // //     break;
+                        // // }
+
+
