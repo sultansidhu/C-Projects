@@ -547,7 +547,7 @@ int main(int argc, char **argv) {
 
                         int nbytes = 0;
                         int position_in_inbuf = 0;
-                        nbytes = read(cur_fd, &(p->in_ptr), 5);
+                        nbytes = read(cur_fd, p->in_ptr, 5);
 
                         printf("read call didnt block\n");
 
@@ -570,7 +570,7 @@ int main(int argc, char **argv) {
                         //position_in_inbuf += nbytes;
                         p->in_ptr += nbytes;
                         int where;
-                        if ((where = find_network_newline(p->inbuf, position_in_inbuf)) < 0){
+                        if ((where = find_network_newline2(p->inbuf, MAX_BUF)) < 0){
                             printf("this guy broke loop\n");
                             break;
                         } else {
