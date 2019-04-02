@@ -44,6 +44,18 @@ fd_set allset;
 
 
 // HELPER FUNCTIONS
+/**
+ * This is a wrapper function for write. This checks if the write failed
+ * and if it did, it makes the player exit and closes their fd's and deallocates
+ * their heap space.
+ */
+ //int Write(int fd, const void * buf, int nbytes){
+///int checker = write(fd, buf, nbytes);
+       // if (checker == -1){
+     // //          close(fd)
+    // /           
+     //   }
+// }
 
 /**
  * This function checks if the player playing the game has finished the game
@@ -187,7 +199,9 @@ int get_full_read(struct client * p){
 void broadcast(struct game_state *game, char *outbuf){
     struct client * top = game->head;
     while(top != NULL){
-        write(top->fd, outbuf, strlen(outbuf));
+        if (write(top->fd, outbuf, strlen(outbuf)) == -1){
+                remove_player(&(game->head), top->fd);
+        }
         top = top->next;
     }
 }
@@ -242,7 +256,15 @@ void advance_turn(struct game_state *game){
     announce_turn(game);
     if (check_gameover(game) == 1){
         // if game is not over, print "Your guess? "
-        write(game->has_next_turn->fd, "Your guess? \r\n", 14);
+        if (write(game->has_next_turn->fd, "Your guess? \r\n", 14) == -1){
+                remove_player(&(game->head), game->has_next_turn->fd);
+                if (game->head != NULL){
+                        advance_turn(game);
+                        char buffa[MAX_BUF] = {'\0'};
+                        sprintf(buffa, "Player exit! Playing next turn!");
+                        broadcast(game, buffa);
+                }
+        }
     }
 }
 
@@ -254,7 +276,9 @@ void broadcast_audience(struct game_state * game, char * outbuf){
     struct client * top = game->head;
     while(top != NULL){
         if(game->has_next_turn->fd != top->fd){
-          write(top->fd, outbuf, MAX_BUF);
+          if (write(top->fd, outbuf, MAX_BUF) == -1){
+                remove_player(&(game->head), top->fd);
+          }
         }
         top = top->next;  
     }
@@ -325,6 +349,7 @@ void remove_valid_player(struct client ** list, int fd){
 void read_from_socket(int filedes, char * name_space){
     char * p = NULL;
     int num_chars = read(filedes, name_space, MAX_BUF);
+    printf("NUMCHARS WAS %d\n", num_chars);
     name_space[num_chars] = '\0';
     p = strstr(name_space, "\r\n");
     *p = '\0';
@@ -377,7 +402,9 @@ void add_player(struct client **top, int fd, struct in_addr addr) {
 void broadcast_gameover(struct game_state * game, char * outbuf, int limit){
         struct client * head = game->head;
         while(head != NULL){
-                write(head->fd, outbuf, limit);
+                if (write(head->fd, outbuf, limit) == -1){
+                        remove_player(&(game->head), head->fd);
+                }
                 head = head->next;
         }
 }
@@ -405,6 +432,7 @@ void remove_player(struct client **top, int fd) {
     }
 }
 
+
 /**
  * this function checks if the letter chosen by the player
  * has already been chosen previously.
@@ -416,6 +444,13 @@ int check_if_guessed(struct game_state * game, struct client * p){
         }
         return 1;
 }
+/**
+ * This function handles the termination of the server
+ */
+ void server_term(int sig){
+        // somehow you broadcast goodbye to everyone.
+ }
+ 
 
 int main(int argc, char **argv) {
     printf("remember to make wrapper functions\n");
@@ -559,7 +594,9 @@ int main(int argc, char **argv) {
                         printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[newline-3]);
                         while ((strlen(p->inbuf) != 3) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
                             char * invalid = "Invalid! Try again!\r\n";
-                            write(cur_fd, invalid, strlen(invalid));
+                            if (write(cur_fd, invalid, strlen(invalid)) == -1){
+                                remove_player(&(game.head), cur_fd);
+                            }
 
 
 
@@ -581,7 +618,9 @@ int main(int argc, char **argv) {
                         int check_guessed;
                         while((check_guessed = check_if_guessed(&game, p)) == 0){
                             char * invalid = "This letter has already been guessed! Guess again!\r\n";
-                            write(cur_fd, invalid, strlen(invalid));
+                            if (write(cur_fd, invalid, strlen(invalid)) == -1){
+                                remove_player(&(game.head), cur_fd);
+                            }
 
 
 
@@ -612,7 +651,9 @@ int main(int argc, char **argv) {
                                 game.letters_guessed[letter_guessed_asciii-97] = 1;
                                 char letter_not_found[MAX_BUF] = {'\0'};
                                 sprintf(letter_not_found, "%c is not in the word!\r\n", p->inbuf[0]);
-                                write(cur_fd, letter_not_found, strlen(letter_not_found));
+                                if (write(cur_fd, letter_not_found, strlen(letter_not_found)) == -1){
+                                        remove_player(&(game.head), cur_fd);
+                                }
                                 game.guesses_left--;
                                 
                                 char new_turn_status[MAX_BUF] = {'\0'};
@@ -638,7 +679,9 @@ int main(int argc, char **argv) {
                                 //advance_turn(&game);
 				char new_turn_status[MAX_BUF] = {'\0'};
                                 broadcast(&game, status_message(new_turn_status, &game));
-				write(cur_fd, "Your guess? \r\n", 14);// THIS WRITE CALL FAILED IDK WHY
+				if (write(cur_fd, "Your guess? \r\n", 14) == -1){
+				        remove_player(&(game.head),cur_fd);
+				}// THIS WRITE CALL FAILED IDK WHY
 				int over = check_gameover(&game);
 				if (over == 1){
 				        // game not over, more guesses to go
@@ -661,7 +704,9 @@ int main(int argc, char **argv) {
                             }
                         } else {
                             char * not_your_turn = "Not your turn!\r\n";
-                            write(cur_fd, not_your_turn, strlen(not_your_turn));
+                            if (write(cur_fd, not_your_turn, strlen(not_your_turn)) == -1){
+                                remove_player(&(game.head), cur_fd);
+                            }
                         }                 
                         break;
                     }
@@ -697,18 +742,25 @@ int main(int argc, char **argv) {
                         broadcast(&game, entry_msg);
                          
                         char status[MAX_BUF] = {'\0'};
-                        write(cur_fd, status_message(status, &game), MAX_BUF);
+                        if (write(cur_fd, status_message(status, &game), MAX_BUF) == -1){
+                                remove_player(&(game.head), cur_fd);
+                        }
                          
                         if((len_ll(game.head)) == 1){
                             initialize_turn(&game);
                         }            
                          
-                        write(game.has_next_turn->fd, "Your guess? ", 12);
+                        if(write(game.has_next_turn->fd, "Your guess? ", 12) == -1){
+                                advance_turn(&game);
+                                remove_player(&(game.head), game.has_next_turn->fd);
+                        }
                          
                         if (cur_fd != game.has_next_turn->fd){
                                 char bufffer[MAX_BUF] = {'\0'};
                                 sprintf(bufffer,"It is currently %s's turn.\r\n", game.has_next_turn->name);
-                                write(cur_fd, bufffer, strlen(bufffer));
+                                if (write(cur_fd, bufffer, strlen(bufffer)) == -1){
+                                        remove_player(&(game.head), cur_fd);
+                                }
                                  
                         }
                         printf("THE CHOSEN WORD WAS %s\n", game.word);
