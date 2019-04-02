@@ -569,6 +569,16 @@ int main(int argc, char **argv) {
 
 
                         nbytes = read(p->fd, p->in_ptr, 3);
+                        if (nbytes == 0){
+                                remove_player(&(game.head), p->fd);
+                                printf("SO THIS GOT EXECUTED LOL\n");
+                                if (len_ll(game.head) == 1){
+                                        game.has_next_turn = NULL;
+                                } else {
+                                        advance_turn(&game);
+                                }
+                                break;
+                        }
                         p->in_ptr += nbytes;
                         int newline = find_network_newline2(p->inbuf, MAX_BUF);
                         printf("THE NEWLINE CAME OUT TO BE: %d\n", newline);
@@ -604,7 +614,11 @@ int main(int argc, char **argv) {
 
                             // USE THE SAME READ STRUCTURE AS ABOVE
                             sleep(1);
-                            read(cur_fd, p->inbuf, 3);
+                            if(read(cur_fd, p->inbuf, 3) == 0){
+                                remove_player(&(game.head), cur_fd);
+                                printf("WE REMOVED THIS GUY BOYS\n");
+                            }
+                            
                             if (find_network_newline2(p->inbuf, 3) == -1){
                                 break;
                             }
@@ -628,7 +642,10 @@ int main(int argc, char **argv) {
 
                             // USE THE SAME READ STRUCTURE AS ABOVE
                             sleep(1);
-                            read(cur_fd, p->inbuf, 3);
+                            if (read(cur_fd, p->inbuf, 3) == 0){
+                                remove_player(&(game.head), cur_fd);
+                                printf("MY MANS OVER HERE GOT REMOVED LMAO\n");
+                            }
                             if (find_network_newline2(p->inbuf, 3) == -1){
                                 break;
                             }
@@ -721,6 +738,10 @@ int main(int argc, char **argv) {
                         char * name = malloc(MAX_BUF);
                         printf("free this malloc'd space\n");
                         read_from_socket(cur_fd, name);
+                        // == 0){
+                         //       remove(&new_players, cur_fd);
+                          //      printf("THATS ALL FOLKS THIS MAN GOT REMOVED LMAO\n");
+                        //}
                         while((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name) == 1)){
                             char *greeting = WELCOME_MSG;
                             if(write(clientfd, greeting, strlen(greeting)) == -1) {
