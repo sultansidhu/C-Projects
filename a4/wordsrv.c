@@ -570,13 +570,15 @@ int main(int argc, char **argv) {
 
                         nbytes = read(p->fd, p->in_ptr, 3);
                         if (nbytes == 0){
-                                remove_player(&(game.head), p->fd);
+                           
                                 printf("SO THIS GOT EXECUTED LOL\n");
                                 if (len_ll(game.head) == 1){
                                         game.has_next_turn = NULL;
                                 } else {
                                         advance_turn(&game);
                                 }
+                                remove_player(&(game.head), p->fd);
+                                
                                 break;
                         }
                         p->in_ptr += nbytes;
@@ -821,7 +823,7 @@ int main(int argc, char **argv) {
 // CODE QUARANTINE
 
 
-// 1. THIS IS THE CODE FROM LAB 10, WE LOOP OVER SHIT AND FIND NETWORK NEWLINE.
+// 1. THIS IS THE CODE FROM LAB 10, WE LOOP OVER stuff AND FIND NETWORK NEWLINE.
  // tell everyone else who's turn it is right now.
                         // char choice[3];
                         // if (cur_fd == game.has_next_turn->fd){
@@ -893,7 +895,7 @@ int main(int argc, char **argv) {
 
 
 // 2. 
-// THE REST OF THE SHIT THAT CAME AFTER THE CODE RIGHT ABOVE THIS COMMENT, THE LAB 10 SHIT
+// THE REST OF THE stuff THAT CAME AFTER THE CODE RIGHT ABOVE THIS COMMENT, THE LAB 10 stuff
 
                         // // int check = read(cur_fd, choice, 3);
                         // // print_read_status(check);
@@ -919,7 +921,7 @@ int main(int argc, char **argv) {
 
 
 
-//3. THIS BITCH LOOPS WHILE READING LOL
+//3. THIS dude LOOPS WHILE READING LOL
 
                         // char guess[3];
                         // read(cur_fd, guess, 3);
