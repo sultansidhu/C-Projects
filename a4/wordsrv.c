@@ -384,7 +384,10 @@ int name_not_found(struct client *game_head, char *user_name, int fd)
         if (strcmp(current->name, user_name) == 0)
         {
             char *outbuf = "The name you entered has already been taken! Try again!\r\n";
-            write(fd, outbuf, strlen(outbuf));
+            if (write(fd, outbuf, strlen(outbuf)) == -1){
+                perror("write");
+                exit(1);
+            }
             indicator = 1;
         }
         current = current->next;
@@ -726,6 +729,7 @@ int main(int argc, char **argv)
                             char *not_your_turn = "Not your turn!\r\n";
                             if (write(cur_fd, not_your_turn, strlen(not_your_turn)) == -1)
                             {
+                                bid_farewell(&game, cur_fd);
                                 remove_player(&(game.head), cur_fd);
                             }
                         }
