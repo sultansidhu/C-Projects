@@ -383,7 +383,7 @@ int name_not_found(struct client *game_head, char *user_name, int fd)
     {
         if (strcmp(current->name, user_name) == 0)
         {
-            char * outbuf = "The name you entered has already been taken! Try again!\r\n";
+            char *outbuf = "The name you entered has already been taken! Try again!\r\n";
             write(fd, outbuf, strlen(outbuf));
             indicator = 1;
         }
@@ -490,7 +490,6 @@ int check_if_guessed(struct game_state *game, struct client *p)
     return 1;
 }
 
-
 int main(int argc, char **argv)
 {
     printf("remember to make wrapper functions\n");
@@ -590,7 +589,7 @@ int main(int argc, char **argv)
                     {
                         // checking for partial reads on letter choice
                         int nbytes = 0;
-                        nbytes = read(cur_fd, p->in_ptr, 5);
+                        nbytes = read(cur_fd, p->in_ptr, MAX_BUF);
                         if (nbytes == 0)
                         {
                             if (len_ll(game.head) != 1)
@@ -599,7 +598,7 @@ int main(int argc, char **argv)
                                 if (game.has_next_turn->fd == cur_fd)
                                 {
                                     advance_turn(&game);
-                                } 
+                                }
                                 remove_player(&(game.head), cur_fd);
                             }
                             else
@@ -625,6 +624,7 @@ int main(int argc, char **argv)
                             p->inbuf[where - 2] = '\0';
                             p->in_ptr -= where;
                             memmove(p->inbuf, &(p->inbuf[where]), p->in_ptr - p->inbuf);
+                            p->in_ptr = p->inbuf;
                         }
                         if (cur_fd == game.has_next_turn->fd)
                         {
@@ -703,7 +703,7 @@ int main(int argc, char **argv)
                                 if (write(cur_fd, "Your guess? \r\n", 14) == -1)
                                 {
                                     remove_player(&(game.head), cur_fd);
-                                } 
+                                }
                                 int over = check_gameover(&game);
                                 if (over == 2)
                                 {
@@ -717,7 +717,6 @@ int main(int argc, char **argv)
                                     char *smsg = status_message(msgbuf, &game);
                                     broadcast(&game, smsg);
                                     advance_turn(&game);
-                                    
                                 }
                             }
                         }
@@ -749,7 +748,12 @@ int main(int argc, char **argv)
                             remove_player(&new_players, cur_fd);
                             break;
                         }
-                        name[numread-2] = '\0';
+                        else if (numread == -1)
+                        {
+                            perror("read");
+                            exit(1);
+                        }
+                        name[numread - 2] = '\0';
                         // checks if the name is already taken and if it is valid
                         while ((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name, cur_fd) == 1))
                         {
@@ -764,8 +768,14 @@ int main(int argc, char **argv)
                             {
                                 remove_player(&new_players, cur_fd);
                             }
-                            name[number_read-2] = '\0';
+                            else if (number_read == -1)
+                            {
+                                perror("read");
+                                exit(1);
+                            }
+                            name[number_read - 2] = '\0';
                         }
+
                         add_player_to_game(&game, cur_fd, p->ipaddr, name);
 
                         remove_valid_player(&(new_players), p->fd);
