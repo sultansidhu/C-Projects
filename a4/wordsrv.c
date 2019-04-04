@@ -473,7 +473,7 @@ void bid_farewell(struct game_state *game, int fd)
     }
     char farewell[MAX_BUF] = {'\0'};
     sprintf(farewell, "Goodbye %s!\r\n", head->name);
-    broadcast(game, farewell);
+    broadcast_audience(game, farewell);
 }
 
 /**
