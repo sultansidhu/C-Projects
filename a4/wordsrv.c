@@ -351,7 +351,7 @@ void read_from_socket(int filedes, char * name_space){
     int num_chars = read(filedes, name_space, MAX_BUF);
     printf("NUMCHARS WAS %d\n", num_chars);
     name_space[num_chars] = '\0';
-    p = strstr(name_space, "\r\n");
+    p = strchr(name_space, '\r');
     *p = '\0';
 }
 
@@ -534,7 +534,7 @@ int main(int argc, char **argv) {
             char *greeting = WELCOME_MSG;
             if(write(clientfd, greeting, strlen(greeting)) == -1) {
                 fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
-                remove_player(&(game.head), p->fd);
+                remove_player(&new_players, p->fd);
             };
         }
         
@@ -685,9 +685,20 @@ int main(int argc, char **argv) {
                     if(cur_fd == p->fd) {
                         // TODO - handle input from an new client who has
                         // not entered an acceptable name.
-                        char * name = malloc(MAX_BUF);
+                        char * name = malloc(MAX_NAME);
                         printf("free this malloc'd space\n");
-                        read_from_socket(cur_fd, name);
+
+                        int numread = read(cur_fd, name, MAX_NAME);
+                        if (numread == 0){
+                            remove_player(&new_players, cur_fd);
+                        }
+                        name[numread] = '\0';
+
+
+
+
+
+                        //read_from_socket(cur_fd, name);
                         // == 0){
                          //       remove(&new_players, cur_fd);
                           //      printf("THATS ALL FOLKS THIS MAN GOT REMOVED LMAO\n");
@@ -697,10 +708,14 @@ int main(int argc, char **argv) {
                             if(write(clientfd, greeting, strlen(greeting)) == -1) {
                                 // fprintf(stderr, "Write to client %s failed\n", inet_ntoa(q.sin_addr));
                                 fprintf(stderr, "Write greeting to new client failed.\n");
-                                remove_player(&(game.head), p->fd);
+                                remove_player(&new_players, p->fd);
                             };
                             //printf("GOT HERE\n");
-                            read_from_socket(cur_fd, name);
+                            int number_read = read(cur_fd, name, MAX_NAME);
+                            if (number_read == 0){
+                                remove_player(&new_players, cur_fd);
+                            }
+                            //read_from_socket(cur_fd, name);
                             //printf("GOT PAST READ FROM SOCKET \n");
                             // PUT PRINT STATEMENTS EVERYWHERE IN THE SECOND TODO AND FIGURE OUT LOCATION OF THE SEGFAULT.
                         }
