@@ -744,6 +744,7 @@ int main(int argc, char **argv)
                         if (numread == 0)
                         {
                             remove_player(&new_players, cur_fd);
+                            break;
                         }
                         name[numread-2] = '\0';
                         // checks if the name is already taken and if it is valid
