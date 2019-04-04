@@ -678,7 +678,8 @@ int main(int argc, char **argv)
                                 int over2 = check_gameover(&game);
                                 if (over2 == 0)
                                 {
-                                    char *gameover = "Game over! No more guesses left!\r\n";
+                                    char gameover[MAX_BUF] = {'\0'};
+                                    sprintf(gameover, "Game over! No more guesses left! The word was %s.\r\n", game.word);
                                     broadcast(&game, gameover);
                                     broadcast(&game, "Starting new game...\r\n");
                                     init_game(&game, argv[1]);
@@ -740,43 +741,40 @@ int main(int argc, char **argv)
                     {
                         // TODO - handle input from an new client who has
                         // not entered an acceptable name.
-                        char *name = malloc(MAX_NAME);
 
-                        int numread = read(cur_fd, name, MAX_NAME);
-                        if (numread == 0)
+                        int numbytes = 0;
+                        numbytes = read(cur_fd, p->in_ptr, MAX_NAME);
+                        if (numbytes == 0)
                         {
                             remove_player(&new_players, cur_fd);
-                            break;
                         }
-                        else if (numread == -1)
+                        else if (numbytes == -1)
                         {
                             perror("read");
                             exit(1);
                         }
-                        name[numread - 2] = '\0';
-                        // checks if the name is already taken and if it is valid
-                        while ((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name, cur_fd) == 1))
+                        p->in_ptr += numbytes;
+                        int break_loc;
+                        if ((break_loc = find_network_newline2(p->inbuf, MAX_BUF)) < 0)
                         {
-                            char *greeting = WELCOME_MSG;
-                            if (write(clientfd, greeting, strlen(greeting)) == -1)
-                            {
-                                fprintf(stderr, "Write greeting to new client failed.\n");
-                                remove_player(&new_players, p->fd);
-                            };
-                            int number_read = read(cur_fd, name, MAX_NAME);
-                            if (number_read == 0)
-                            {
-                                remove_player(&new_players, cur_fd);
-                            }
-                            else if (number_read == -1)
-                            {
-                                perror("read");
-                                exit(1);
-                            }
-                            name[number_read - 2] = '\0';
+                            // partial read found, break loop and re-read
+                            break;
+                        }
+                        else
+                        {
+                            p->inbuf[break_loc - 2] = '\0';
+                            p->in_ptr -= break_loc;
+                            memmove(p->inbuf, &(p->inbuf[break_loc]), p->in_ptr - p->inbuf);
+                            p->in_ptr = p->inbuf;
+                            strncpy(p->name, p->inbuf, MAX_NAME);
                         }
 
-                        add_player_to_game(&game, cur_fd, p->ipaddr, name);
+                        if ((strlen(p->name) == 0) || (name_not_found(game.head, p->name, cur_fd) == 1))
+                        {
+                            break;
+                        }
+
+                        add_player_to_game(&game, cur_fd, p->ipaddr, p->name);
 
                         remove_valid_player(&(new_players), p->fd);
 
