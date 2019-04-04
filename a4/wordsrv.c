@@ -492,7 +492,6 @@ int check_if_guessed(struct game_state *game, struct client *p)
 
 int main(int argc, char **argv)
 {
-    printf("remember to make wrapper functions\n");
     int clientfd, maxfd, nready;
     struct client *p;
     struct sockaddr_in q;
