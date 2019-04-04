@@ -536,37 +536,13 @@ int main(int argc, char **argv) {
         for(cur_fd = 0; cur_fd <= maxfd; cur_fd++) {
             if(FD_ISSET(cur_fd, &rset)) {
                 // Check if this socket descriptor is an active player
-                //write(cur_fd, "What would your choice be?", 26);
                 for(p = game.head; p != NULL; p = p->next) {
-                    //printf("\n\nwe are in the current players list right now\n\n");
-                    //print_ll(game);
-                    //write(cur_fd, "It comes into the for loop?", 26);
                     if(cur_fd == p->fd) {
-                        // read for input
-                        char choice;
-
-                        
-
-
-
-                        // check input for validity
-                        printf("WHAT YOU SEE HERE IS %lu %c\n", strlen(p->inbuf), p->inbuf[0]);
-                        
-                        
-                        
-                        
-                        // check if the dude who gave input was the one who had the turn.
                         if (cur_fd == game.has_next_turn->fd){
                         // read checking
                         int nbytes = 0;
-                        int position_in_inbuf = 0;
                         nbytes = read(cur_fd, p->in_ptr, 5);
-
-                        printf("read call didnt block\n");
-
-
                         if(nbytes == 0){
-                            printf("THIS BOY GETTIN KICKED BC HE CANT READ\n");
                             if (len_ll(game.head) != 1){
                                 advance_turn(&game);
                                 remove_player(&(game.head), cur_fd);
@@ -578,9 +554,6 @@ int main(int argc, char **argv) {
                             perror("read");
                             exit(1);
                         }
-
-
-                        //position_in_inbuf += nbytes;
                         p->in_ptr += nbytes;
                         int where;
                         if ((where = find_network_newline2(p->inbuf, MAX_BUF)) < 0){
@@ -596,89 +569,23 @@ int main(int argc, char **argv) {
                         
                         // checking for invalid reads
                         
-                        while ((strlen(p->inbuf) != 1) || ('a'>p->inbuf[0]) || ('z'<p->inbuf[0])){
-                            char * invalid = "Invalid! Try again!\r\n";
+                        if ((strlen(p->inbuf) != 1)){
+                            char * invalid = "Invalid! Must be a single character! Try again!\r\n";
                             if (write(cur_fd, invalid, strlen(invalid)) == -1){
                                 remove_player(&(game.head), cur_fd);
                             }
-                            // USE THE SAME READ STRUCTURE AS ABOVE
-                            //sleep(1);
-                            int readcheck;
-                            readcheck = read(cur_fd, p->in_ptr, 5);
-                            
-                            if(readcheck == 0){
-                                printf("THIS BOY GETTIN KICKED BC HE CANT READ\n");
-                                if (len_ll(game.head) != 1){
-                                    advance_turn(&game);
-                                    remove_player(&(game.head), cur_fd);
-                                } else {
-                                    game.has_next_turn = NULL;
-                                    remove_player(&game.head, cur_fd);
-                                }
-                            } else if (readcheck == -1){
-                                perror("read");
-                                exit(1);
-                            }
-                            
-                            p->in_ptr += nbytes;
-                            int where_2;
-                            if ((where_2 = find_network_newline2(p->inbuf, MAX_BUF)) < 0){
-                                printf("this guy broke loop in invalid\n");
-                                break;
-                            } else {
-                                p->inbuf[where_2-2] = '\0';
-                                printf("WHAT YOU GOT RIGHT NOW IS %s boys\n", p->inbuf); 
-                                p->in_ptr -= where_2;
-                                memmove(p->inbuf, &(p->inbuf[where_2]), p->in_ptr-p->inbuf);
-                            }
-                           
-
+                            break;
                         }
                         
                         // checking for invalid reads ends
                         // checking for already read.
                         int check_guessed;
-                        while((check_guessed = check_if_guessed(&game, p)) == 0){
+                        if ((check_guessed = check_if_guessed(&game, p)) == 0){
                             char * invalid = "This letter has already been guessed! Guess again!\r\n";
                             if (write(cur_fd, invalid, strlen(invalid)) == -1){
                                 remove_player(&(game.head), cur_fd);
                             }
-
-                            // USE THE SAME READ STRUCTURE AS ABOVE
-                            int nbytes = 0;
-                            int position_in_inbuf = 0;
-                            nbytes = read(cur_fd, p->in_ptr, 5);
-
-                            printf("read call didnt block\n");
-
-
-                            if(nbytes == 0){
-                                printf("THIS BOY GETTIN KICKED BC HE CANT READ\n");
-                                if (len_ll(game.head) != 1){
-                                    advance_turn(&game);
-                                    remove_player(&(game.head), cur_fd);
-                                } else {
-                                    game.has_next_turn = NULL;
-                                    remove_player(&game.head, cur_fd);
-                                }
-                            } else if (nbytes == -1){
-                                perror("read");
-                                exit(1);
-                            }
-
-
-                            //position_in_inbuf += nbytes;
-                            p->in_ptr += nbytes;
-                            int where;
-                            if ((where = find_network_newline2(p->inbuf, MAX_BUF)) < 0){
-                                printf("this guy broke loop\n");
-                                break;
-                            } else {
-                                p->inbuf[where-2] = '\0';
-                                printf("WHAT YOU GOT RIGHT NOW IS %s boys\n", p->inbuf); 
-                                p->in_ptr -= where;
-                                memmove(p->inbuf, &(p->inbuf[where]), p->in_ptr-p->inbuf);
-                            }
+                            break;
                         }
                         // checking for already read ends.
                         
