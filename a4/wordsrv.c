@@ -596,7 +596,10 @@ int main(int argc, char **argv)
                             if (len_ll(game.head) != 1)
                             {
                                 bid_farewell(&game, cur_fd);
-                                advance_turn(&game);
+                                if (game.has_next_turn->fd == cur_fd)
+                                {
+                                    advance_turn(&game);
+                                } 
                                 remove_player(&(game.head), cur_fd);
                             }
                             else
