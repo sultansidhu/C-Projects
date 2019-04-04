@@ -432,6 +432,20 @@ void remove_player(struct client **top, int fd) {
     }
 }
 
+/**
+ * this function bids farewell to the exiting player, in
+ * case the player exits while playing the game.
+ */
+void bid_farewell(struct game_state * game, int fd){
+    struct client * head = game->head;
+    while ((head!=NULL) && (head->fd != fd)){
+        head = head->next;
+    }
+    char farewell[MAX_BUF] = {'\0'};
+    sprintf(farewell, "A player has exit the game, goodbye %s!\r\n", head->name);
+    broadcast(game, farewell);
+}
+
 
 /**
  * this function checks if the letter chosen by the player
@@ -544,6 +558,7 @@ int main(int argc, char **argv) {
                         nbytes = read(cur_fd, p->in_ptr, 5);
                         if(nbytes == 0){
                             if (len_ll(game.head) != 1){
+                                bid_farewell(&game, cur_fd);
                                 advance_turn(&game);
                                 remove_player(&(game.head), cur_fd);
                             } else {
