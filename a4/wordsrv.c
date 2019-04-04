@@ -328,7 +328,6 @@ void remove_valid_player(struct client **list, int fd)
         {
             struct client *first;
             first = (*list)->next;
-            printf("Removing player from new player list %d\n", fd);
             free(*list);
             *list = first;
         }
@@ -746,7 +745,7 @@ int main(int argc, char **argv)
                         {
                             remove_player(&new_players, cur_fd);
                         }
-                        name[numread] = '\0';
+                        name[numread-2] = '\0';
                         // checks if the name is already taken and if it is valid
                         while ((name == NULL) || (strlen(name) == 0) || (name_not_found(game.head, name, cur_fd) == 1))
                         {
@@ -761,6 +760,7 @@ int main(int argc, char **argv)
                             {
                                 remove_player(&new_players, cur_fd);
                             }
+                            name[number_read-2] = '\0';
                         }
                         add_player_to_game(&game, cur_fd, p->ipaddr, name);
 
@@ -796,7 +796,6 @@ int main(int argc, char **argv)
                                 remove_player(&(game.head), cur_fd);
                             }
                         }
-                        printf("THE CHOSEN WORD WAS %s\n", game.word);
                         break;
                     }
                 }
